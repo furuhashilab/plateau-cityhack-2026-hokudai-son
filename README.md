@@ -8,7 +8,7 @@ A three-person team from the **Furuhashi Lab Drone Club**.
 
 | Role            | Name        |
 | --------------- | ----------- |
-| **Team Leader** | Rito-kun |
+| **Team Leader** | Rito-san |
 | Member          | Aki-san  |
 | Member          | Tomoya   |
 
