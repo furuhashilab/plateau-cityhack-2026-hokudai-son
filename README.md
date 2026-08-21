@@ -2,6 +2,19 @@
 
 A team project for **PLATEAU CityHack Challenge 2026**, held from **August 22 to September 5, 2026**.
 
+## Team
+
+A three-person team from the **Furuhashi Lab Drone Club**.
+
+| Role            | Name        |
+| --------------- | ----------- |
+| **Team Leader** | Rito-kun |
+| Member          | Aki-san  |
+| Member          | Tomoya   |
+
+
+
+
 Using **Project PLATEAU's 3D city models and open geospatial data**, we aim to develop a prototype that addresses real challenges faced by local governments.
 
 ## About
