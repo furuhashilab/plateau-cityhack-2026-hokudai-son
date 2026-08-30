@@ -10,11 +10,105 @@ Codex (GPT-5)
 
 ## Current Phase
 
-Phase 2A.1 — Facility ↔ PLATEAU Building Linking CONDITIONAL PASS
+Phase 2B — Road Impact / Traffic Regulation Potential Research PASS
 
 ## Current Goal
 
-Safely link existing West Maizuru facilities to actual loaded PLATEAU building features where runtime/manual verification supports it, while preserving candidate and unlinked states.
+Research and design how to acquire Maizuru road data, integrate it with the existing DEM/tide/inundation logic, and evaluate traffic-management candidates without implementing the road layer yet.
+
+## Phase 2B Research Status
+
+Phase 2B research / architecture spike was completed on 2026-08-30 in `/Users/Rito/plateau-cityhack-2026-hokudai-son-git`.
+
+Status:
+
+- PASS
+- Research/design only.
+- No road layer implementation.
+- No dataset download or committed data extract.
+- No dependency changes.
+- No ContextLimits / framebuffer workaround changes.
+- No commit or push.
+
+Deliverable:
+
+- `docs/ROAD_IMPACT_RESEARCH.md`
+
+Main recommendation:
+
+- Use a hybrid approach.
+- Use OpenStreetMap-derived centerlines as the Phase 2B analysis geometry because they provide practical centerline ways and `highway` classifications for segment metrics.
+- Keep PLATEAU Maizuru 2025 `tran` as official PLATEAU reference/validation data and possible future surface visualization.
+- Consider Kyoto/Maizuru road registry data later if machine-readable export and license are confirmed.
+
+PLATEAU road feasibility findings:
+
+- Maizuru PLATEAU city code `26202`, year `2025`, spec `5.0` includes `tran` = traffic road model.
+- CityGML `tran`: 82 files, 15,641 features, 44,498,495 bytes, max LOD 2.
+- PLATEAU delivery also includes:
+  - `26202_tran_lod1`, MVT, z10-16, layer `Road`, file size 9,752,394 bytes.
+  - `26202_tran_lod2`, MVT, z10-16, layers `TrafficArea` and `AuxiliaryTrafficArea`, file size 1,194,757 bytes.
+- A sample CityGML feature had `tran:Road`, `gml:id`, `gml:name`, `tran:class`, `tran:function`, `uro:RoadStructureAttribute`, and `tran:lod1MultiSurface`.
+- Attribute API resolved one sample to `tran:class=道路`, `tran:function=不明`, and section type `土工区間・通常区間`.
+- PLATEAU `tran` is official and usable after preprocessing, but weaker for immediate traffic-management analytics because it is surface-geometry oriented and inspected classification is sparse/unknown.
+
+Recommended road impact architecture:
+
+- Preprocess or load clipped AOI road lines.
+- Precompute road samples once after DEM/connectivity are available.
+- Store per-sample ground elevation and sea-connection threshold.
+- On tide/method changes, recompute metrics with numeric comparisons only.
+- Do not resample DEM or rebuild road geometry on every slider update.
+
+Recommended sampling:
+
+- Fixed 5 m spacing along road centerlines, always including endpoints.
+- If sample count becomes too high, use 10 m for minor roads and 5 m for important classes.
+- This matches the current GSI DEM5A nominal resolution and is explainable for CityHack.
+
+Recommended metrics:
+
+- Visualization drivers: maximum potential depth, affected ratio, affected length, road class.
+- Inspector/export metrics: min/mean/max elevation, max/mean potential depth, affected length, total length, affected ratio, affected sample count, sample count, tide, method, source/provenance.
+- No automatic closure/slow-driving determination without authoritative thresholds.
+
+Rendering recommendation:
+
+- Avoid one React component per road.
+- First implementation should use preprocessed static JSON/GeoJSON and Cesium primitive-level batched polylines, likely `PolylineCollection` for the first measurable prototype.
+- Consider `GroundPolylinePrimitive` later only if visual ground-following is necessary.
+- Keep picking priority from Phase 2A.1 behavior: facility, building, road, empty.
+
+Future compatibility:
+
+- Road model should include provenance, WGS84 geometry, bbox, total length, samples, and scenario-derived metrics for later viewport/rectangle/polygon/census filtering and CSV/XLSX export.
+- Census small-area aggregation can use sample-in-polygon approximation first, then line clipping later.
+- Backflow-related future work should use only cautious wording such as `Potential Backflow-Susceptible Lowland`; the elevation-only minus sea-connected difference is not actual backflow.
+- Most valuable future municipal data: drainage outlet coordinates, outlet elevation, flap gate presence/status, drainage area, culvert/underpass/low-point locations, pump information, and historical road-control points.
+
+Verification:
+
+- Startup Git state was clean on `main`.
+- Read-only preflight was performed:
+  - `pwd`: `/Users/Rito/plateau-cityhack-2026-hokudai-son-git`
+  - `git branch --show-current`: `main`
+  - `git status --short`: clean before edits
+  - `git diff --stat`: empty before edits
+  - `git log --oneline -5`: latest commit `88ba441 Link urban facilities to PLATEAU buildings`
+- `/Users/Rito/RESEARCH_MAC_OPERATING_RULES.md` was not visible at that absolute path in the sandbox, but the repository-local `RESEARCH_MAC_OPERATING_RULES.md` was read and followed.
+- No runtime browser verification was run because this phase is documentation-only.
+
+Changed files in Phase 2B research:
+
+- `docs/ROAD_IMPACT_RESEARCH.md`
+- `docs/AI_HANDOFF.md`
+
+Exact next action:
+
+- Await user review of `docs/ROAD_IMPACT_RESEARCH.md`.
+- Do not implement roads until the road source and Phase 2B.1 scope are approved.
+
+Previous Phase 2A.1 status retained below for context.
 
 ## Phase 1A Result
 
