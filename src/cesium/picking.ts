@@ -149,6 +149,12 @@ export function attachBuildingPicking(
   }
 
   function selectFacility(facility: Facility) {
+    const linkedFeature = findVerifiedFacilityBuildingFeature(viewer, facility);
+    if (linkedFeature) {
+      highlighted = linkedFeature;
+      previousColor = Color.clone(highlighted.color ?? Color.WHITE);
+      highlighted.color = Color.fromCssColorString("#22d3ee").withAlpha(0.9);
+    }
     const groundElevationMeters = getGroundElevation()?.sampleMeters(facility.longitude, facility.latitude) ?? null;
     const tideLevelMeters = getTideLevelMeters();
     const method = getInundationMethod();
@@ -204,6 +210,35 @@ function pickNearbyFacility(
     }
   }
   return nearest?.facility ?? null;
+}
+
+function findVerifiedFacilityBuildingFeature(viewer: Viewer, facility: Facility): MutableFeature | null {
+  if (facility.plateauLinkStatus !== "verified" || !facility.plateauBuildingId) return null;
+
+  const baseScreenPosition = viewer.scene.cartesianToCanvasCoordinates(
+    Cartesian3.fromDegrees(facility.longitude, facility.latitude, 3)
+  );
+  if (!baseScreenPosition) return null;
+
+  const positions = [baseScreenPosition];
+  for (let dx = -36; dx <= 36; dx += 6) {
+    for (let dy = -36; dy <= 36; dy += 6) {
+      if (dx === 0 && dy === 0) continue;
+      positions.push(Cartesian2.add(baseScreenPosition, new Cartesian2(dx, dy), new Cartesian2()));
+    }
+  }
+
+  for (const position of positions) {
+    const pickedObjects = viewer.scene.drillPick(position, 12);
+    for (const candidate of pickedObjects) {
+      if (!(candidate instanceof Cesium3DTileFeature)) continue;
+      if (readFirstProperty(candidate, FIELD_CANDIDATES.identifier) === facility.plateauBuildingId) {
+        return candidate as MutableFeature;
+      }
+    }
+  }
+
+  return null;
 }
 
 function facilityStatus(depthMeters: number | null): FacilitySelection["status"] {

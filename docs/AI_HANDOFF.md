@@ -2,7 +2,7 @@
 
 ## Last Updated
 
-2026-08-27
+2026-08-30
 
 ## Updated By
 
@@ -10,17 +10,96 @@ Codex (GPT-5)
 
 ## Current Phase
 
-Phase 2A — Critical Facilities / Urban Function Data PASS with Known Technical Debt
+Phase 2A.1 — Facility ↔ PLATEAU Building Linking CONDITIONAL PASS
 
 ## Current Goal
 
-Place a small, provenance-aware set of real West Maizuru urban functions on the existing PLATEAU/DEM/inundation viewer without adding scores, networks, or scenario facilities.
+Safely link existing West Maizuru facilities to actual loaded PLATEAU building features where runtime/manual verification supports it, while preserving candidate and unlinked states.
 
 ## Phase 1A Result
 
 PASS — Real Maizuru PLATEAU Viewer PoC is accepted as of 2026-08-26.
 
 ## Current Status
+
+Phase 2A.1 was implemented on 2026-08-30 in the GitHub-connected main-branch workspace `/Users/Rito/plateau-cityhack-2026-hokudai-son-git`. The old backup directory `/Users/Rito/Plateau_cityhack_challenge2026` was not modified.
+
+Phase 2A.1 status:
+
+- CONDITIONAL PASS
+- Link status model is now explicit: `verified`, `candidate`, `unlinked`.
+- Total facilities: 18
+- Verified: 12
+- Candidate: 5
+- Unlinked: 1
+- Medical: 6 verified / 0 candidate / 0 unlinked
+- Evacuation: 3 verified / 4 candidate / 1 unlinked
+- Transport: 0 verified / 1 candidate / 0 unlinked
+- Daily Life: 3 verified / 0 candidate / 0 unlinked
+
+Linking architecture:
+
+- Facility records keep their original longitude, latitude, source, provenance, and category.
+- Each facility can store `plateauBuildingId`, `plateauLinkStatus`, `plateauLinkMethod`, and `plateauLinkNote`.
+- Candidate IDs are allowed but are not treated as confirmed links.
+- The data model does not require unique building IDs, so one PLATEAU building can be associated with multiple facility records.
+- Verified facility selection searches the current screen neighborhood with `scene.drillPick()`, excludes facility primitives, and highlights only a matching PLATEAU `gml_id`.
+- Candidate and unlinked facility selection never highlights a PLATEAU building as confirmed.
+
+Manual verification:
+
+- Runtime metadata investigation used the loaded Maizuru 2025 PLATEAU tiles and top-down camera checks around facility representative coordinates.
+- Inspected metadata included `gml_id`, `bldg:usage`, `bldg:measuredHeight`, `uro:BuildingIDAttribute_uro:buildingID`, area fields, and `_xmin/_xmax/_ymin/_ymax`.
+- Verified links were not assigned by nearest building, visual appearance, building size, or PLATEAU usage alone.
+
+Priority facility results:
+
+- Medical `あいおい橋四方クリニック`: verified, `bldg_f2bae1b9-d8cf-457c-a401-d0bbd82e4a17`, PLATEAU usage `文教厚生施設`, measured height `8.16 m`, buildingID `26202-bldg-13389`.
+- Evacuation `文化公園体育館`: unlinked. Top-down and wider surrounding-pixel search returned no safe PLATEAU building candidate at the representative coordinate.
+- Transport `西舞鶴駅・西駅交流センター`: candidate, `bldg_7a483d82-09ca-4df8-8d7e-67b830a1e111`. The co-located representative coordinate picks this feature, but PLATEAU usage is `共同住宅` and the coordinate is an adjacent AOI representative point, so it is not verified as the station/exchange-center building.
+- Daily Life `フクヤ 西舞鶴店`: verified, `bldg_2f9d9621-1bc9-4b43-a516-a74d9f57ce97`, PLATEAU usage `商業施設`, measured height `9.91 m`, buildingID `26202-bldg-6886`.
+
+Co-located handling:
+
+- `evac-west-station-center` and `transport-nishi-maizuru` keep the exact same longitude/latitude.
+- Both carry the same candidate PLATEAU building ID.
+- This is not treated as a data error; the model permits one building to support multiple urban functions.
+- Neither is verified because the picked feature and source-coordinate caveat are not sufficient for a confirmed station/exchange-center link.
+
+Runtime verification:
+
+- Dev server: `http://127.0.0.1:5173/`
+- Chrome check after final reload: Ready, 127 loaded / 0 pending, 60 FPS, 160 MB UI JS heap.
+- Priority facility click checks:
+  - Medical: `あいおい橋四方クリニック`, details displayed, PLATEAU link `Verified`, building ID displayed.
+  - Evacuation: `文化公園体育館`, details displayed, PLATEAU link `Unlinked`, no building ID.
+  - Transport: selected from co-located category offset, details displayed, PLATEAU link `Candidate`, building ID displayed as candidate.
+  - Daily Life: `フクヤ 西舞鶴店`, details displayed, PLATEAU link `Verified`, building ID displayed.
+- Building highlight: verified `フクヤ 西舞鶴店` selection highlighted the linked PLATEAU building in cyan in the runtime screenshot; candidate transport remained a candidate and was not confirmed-highlighted.
+- Ground elevation, tide, sea-connected inundation fields remained visible in facility details.
+- PLATEAU building picking was spot-checked during co-located click testing and still opened the selected-building panel.
+- Console still reports the known non-blocking Cesium/WebGL `DeveloperError` classified below as existing technical debt; this was not modified.
+
+Static verification:
+
+- `npm run typecheck`: PASS
+- `npm run build`: PASS
+
+Changed files in Phase 2A.1:
+
+- `src/types/facility.ts`
+- `src/data/facilities/westMaizuruFacilities.json`
+- `src/cesium/picking.ts`
+- `src/components/SelectedFacilityPanel.tsx`
+- `src/styles.css`
+- `docs/FACILITY_DATA_MANIFEST.md`
+- `docs/AI_HANDOFF.md`
+
+Exact next action:
+
+- Await user review. Next recommended phase is README refresh as a separate task, not scores/networks.
+
+Previous Phase 2A status retained below for context.
 
 Phase 2A final verification/co-location/performance attribution was performed on 2026-08-27. The original label-clamping crash remains fixed, facility primitive collections are confirmed to exist at runtime, all four categories can now be selected from the normal camera, facility details and tide integration work, and Facilities ON/OFF does not explain the previously observed FPS drop. The remaining framebuffer/texture-atlas error was diagnosed separately on fresh tabs and is now treated as existing Cesium technical debt rather than a Phase 2A blocker.
 

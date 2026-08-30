@@ -9,6 +9,7 @@ export type DataProvenance =
   | "scenario";
 
 export type FacilityCategory = "medical" | "evacuation" | "transport" | "daily-life";
+export type PlateauLinkStatus = "verified" | "candidate" | "unlinked";
 
 export type Facility = {
   id: string;
@@ -22,6 +23,9 @@ export type Facility = {
   sourceUrl: string;
   provenance: Exclude<DataProvenance, "scenario">;
   plateauBuildingId: string | null;
+  plateauLinkStatus: PlateauLinkStatus;
+  plateauLinkMethod?: string;
+  plateauLinkNote?: string;
   metadata?: Record<string, string | number | boolean | null>;
 };
 

@@ -19,7 +19,22 @@ export function SelectedFacilityPanel({ selection }: { selection: FacilitySelect
         <div><dt>Status</dt><dd className={`facility-status ${selection.status?.toLowerCase() ?? "unknown"}`}>{selection.status ?? "Unknown"}</dd></div>
         <div><dt>Source</dt><dd><a href={facility.sourceUrl} target="_blank" rel="noreferrer">{facility.source}</a></dd></div>
         <div><dt>Provenance</dt><dd>{facility.provenance}</dd></div>
-        <div><dt>PLATEAU building</dt><dd>{facility.plateauBuildingId ? `Linked: ${facility.plateauBuildingId}` : "Unlinked"}</dd></div>
+        <div>
+          <dt>PLATEAU link</dt>
+          <dd className={`plateau-link-status ${facility.plateauLinkStatus}`}>{plateauLinkLabel(facility.plateauLinkStatus)}</dd>
+        </div>
+        {facility.plateauBuildingId ? (
+          <div>
+            <dt>Building ID</dt>
+            <dd>{facility.plateauBuildingId}</dd>
+          </div>
+        ) : null}
+        {facility.plateauLinkNote ? (
+          <div>
+            <dt>Link note</dt>
+            <dd>{facility.plateauLinkNote}</dd>
+          </div>
+        ) : null}
       </dl>
     </div>
   );
@@ -32,4 +47,8 @@ function categoryLabel(category: string) {
 function formatMeters(value: number | null, includeSign = false) {
   if (value === null) return "Unknown";
   return `${includeSign && value >= 0 ? "+" : ""}${value.toFixed(1)} m`;
+}
+
+function plateauLinkLabel(status: string) {
+  return ({ verified: "Verified", candidate: "Candidate", unlinked: "Unlinked" } as Record<string, string>)[status] ?? "Unknown";
 }
