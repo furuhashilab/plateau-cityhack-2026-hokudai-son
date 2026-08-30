@@ -1,101 +1,187 @@
 # PLATEAU CityHack Challenge 2026
 
-A team project for **PLATEAU CityHack Challenge 2026**, held from **August 22 to September 5, 2026**.
+A team project for **PLATEAU CityHack Challenge 2026**, held from
+**August 22 to September 5, 2026**.
 
 ## Team
 
 A three-person team from the **Furuhashi Lab Drone Club**.
 
-| Role            | Name        |
-| --------------- | ----------- |
-| **Team Leader** | Rito |
-| Member          | Aki  |
-| Member          | Tomoya   |
+| Role | Name |
+| --- | --- |
+| Team Leader | Rito |
+| Member | Aki |
+| Member | Tomoya |
 
+---
 
+## Project Overview
 
+This project explores how **3D city models can help people understand
+urban resilience and make better decisions about the future of their city**.
 
-Using **Project PLATEAU's 3D city models and open geospatial data**, we aim to develop a prototype that addresses real challenges faced by local governments.
+Our current prototype focuses on **Maizuru City, Kyoto Prefecture**.
 
-## About
+Maizuru has limited usable urban land between the sea and surrounding
+mountains, and coastal lowlands may be affected by storm surge and flooding.
 
-Rather than simply visualizing cities in 3D, we want to explore:
+Rather than building only a flood visualization tool, we are exploring:
 
-> **How can 3D city data help people notice overlooked urban problems and make better decisions?**
+> **How should important urban functions be placed so that the city can
+> continue to function under future coastal flood risk?**
 
-We are especially interested in challenges that are difficult to understand from ordinary 2D maps.
+---
 
-## Target Municipalities
+## Current Prototype
 
-We are currently researching the municipalities participating as mentors:
+The application combines:
 
-* Maizuru City
-* Fujisawa City
-* Kyoto City
-* Saitama City
+- **Project PLATEAU 3D city models**
+- **GSI DEM5A elevation data**
+- Ground elevation visualization
+- User-defined tide level scenarios
+- Simplified inundation potential
+- Sea-connected inundation analysis
+- Existing urban facilities
+- Facility-level flood impact visualization
 
-The final target area and problem will be selected after discussions with local government mentors.
+Users can explore Maizuru in 3D, raise the assumed tide level, and observe
+how low-lying areas, buildings, and urban facilities may be affected.
 
-## Current Ideas
+---
 
-### CITY TIME MACHINE
+## Urban Functions
 
-Visualize how the same city changes under different conditions.
+The current prototype includes real facilities in four categories:
 
-`Present → Future → Disaster → Countermeasures`
+- Medical
+- Evacuation
+- Transport
+- Daily Life
 
-Possible scenarios include:
+Facility information can be inspected together with:
 
-* 2035 / 2050 urban changes
-* Floods, earthquakes, and tsunamis
-* Tourism and event congestion
-* Transportation changes
-* Logistics conditions
+- Ground elevation
+- Scenario tide level
+- Potential inundation depth
+- Sea connectivity
+- Current impact status
+- Data provenance
 
-### Drone First Responder
+---
 
-Use **PLATEAU × GIS × drones** to identify which areas should be inspected first after a disaster.
+## Inundation Model
 
-### Logistics Friction Twin
+This application does **not** provide an official flood forecast or a
+full hydrodynamic simulation.
 
-Visualize hidden time losses in urban logistics, such as:
+The simplified model currently supports two approaches.
 
-* Loading and unloading
-* Narrow streets
-* Traffic and pedestrian congestion
-* Difficult building access
-* The "last 50 meters" of delivery
+### Elevation-only
 
-### Infrastructure Triage
+Highlights all ground below the selected tide level.
 
-Support local governments in deciding which roads, bridges, or other infrastructure should be inspected first when staff and resources are limited.
+### Sea-connected
 
-## Development Flow
+Highlights low-lying ground only when it is topographically connected
+to the sea at the selected tide level.
 
-`Research → Municipality Interviews → Problem Selection → Prototype → Feedback → Final Presentation`
+The sea-connected model uses a precomputed connectivity threshold based
+on a 4-neighbor priority-flood approach over the DEM grid.
 
-## Status
+The model does not currently account for:
 
-**Current Phase: Ideation / Research**
+- Drainage networks
+- Culverts
+- Pumps
+- Flap gates
+- Waves
+- Flow velocity
+- Levee failure
+- Time-dependent flood propagation
 
-* [x] Repository setup
-* [x] Initial idea generation
-* [x] Initial municipality research
-* [ ] Select target municipality
-* [ ] Select final problem
-* [ ] Define MVP
-* [ ] Develop prototype
-* [ ] Final presentation
+These limitations are intentionally exposed rather than presented as
+high-fidelity flood prediction.
 
-## Team
+---
 
-A three-person team from the **Furuhashi Lab Drone Club**.
+## Technology
 
-## Goal
+- Vite
+- React
+- TypeScript
+- CesiumJS
+- Project PLATEAU 3D Tiles
+- GSI DEM5A
 
-Our goal is to create something that is:
+A separate technical spike is also being conducted with **Navara** to
+evaluate its suitability for future interactive 3D visualization.
 
-* **Useful** — addresses a real local issue
-* **Unexpected** — focuses on an overlooked perspective
-* **Interactive** — allows users to explore different urban scenarios
-* **Expandable** — can potentially be adapted to other cities after the hackathon
+CesiumJS remains the main implementation for the CityHack prototype.
+
+---
+
+## Current Development Status
+
+### Completed
+
+- [x] PLATEAU 3D building visualization
+- [x] Building picking and attributes
+- [x] Ground elevation visualization
+- [x] Tide-level scenario control
+- [x] Simplified inundation visualization
+- [x] Sea-connected inundation model
+- [x] Building impact visualization
+- [x] Urban facility dataset integration
+- [x] Facility category filtering
+- [x] Facility impact inspection
+
+### Next
+
+- [ ] Link facilities to PLATEAU buildings
+- [ ] Evaluate urban-function impacts
+- [ ] Visualize relationships between urban functions
+- [ ] Add future facility placement scenarios
+- [ ] Compare current and future urban resilience
+
+---
+
+## Data Sources
+
+The prototype currently uses data including:
+
+- **Project PLATEAU** — Maizuru City 3D city models
+- **Geospatial Information Authority of Japan (GSI)** — DEM5A elevation data
+- Publicly available facility datasets and manually verified open data
+
+Detailed facility data provenance and limitations are documented in:
+
+`docs/FACILITY_DATA_MANIFEST.md`
+
+---
+
+## Project Direction
+
+The final experience aims to move beyond:
+
+> “Where will flooding occur?”
+
+toward:
+
+> **“If usable urban land decreases, how should Maizuru reorganize its
+> important urban functions?”**
+
+The long-term interaction concept is:
+
+```text
+Explore the current city
+        ↓
+Raise the tide level
+        ↓
+Observe affected urban functions
+        ↓
+Understand lost connections
+        ↓
+Place future facilities
+        ↓
+Compare urban resilience before and after
