@@ -16,6 +16,47 @@ Phase 2D — Child-friendly Map-first UI Refactor
 
 Make the current 3D Maizuru experience understandable to elementary school users by making the map dominant, moving technical details into disclosure controls, and using simple Japanese labels.
 
+## GitHub Pages Deployment Prep
+
+Status: PASS as of 2026-09-02. Not committed yet.
+
+Scope:
+
+- No app feature additions.
+- No commit or push performed.
+- Target public URL: `https://furuhashilab.github.io/plateau-cityhack-2026-hokudai-son/`
+
+Implementation:
+
+- `vite.config.ts` now sets Vite `base` to `/plateau-cityhack-2026-hokudai-son/`.
+- `src/data/maizuruPlateau.ts` keeps the existing `/plateau-proxy/tileset.json` for dev, but production uses the direct PLATEAU assets URL.
+- `.github/workflows/deploy.yml` builds with `npm ci` and `npm run build`, uploads `dist`, and deploys to GitHub Pages.
+- `package.json` adds `postbuild` to run `scripts/prepare-pages-cesium.mjs`.
+- `scripts/prepare-pages-cesium.mjs` moves vite-plugin-cesium's generated Cesium static output into `dist/cesium`, which is the path GitHub Pages and Vite preview resolve for `/plateau-cityhack-2026-hokudai-son/cesium/...`.
+
+CORS and URL audit:
+
+- Direct PLATEAU `tileset.json` fetch succeeded with `Origin: https://furuhashilab.github.io` and `access-control-allow-origin: *`.
+- Direct PLATEAU sample `data/data426.b3dm` fetch succeeded with the same origin and `access-control-allow-origin: *`.
+- GSI standard imagery and GSI DEM sample tiles succeeded with `access-control-allow-origin: *`.
+- Production `dist` contains no `/plateau-proxy`, `localhost`, or `127.0.0.1` runtime references.
+- `/plateau-proxy` remains only in dev-only source/config paths.
+
+Production runtime verification:
+
+- Preview URL used: `http://127.0.0.1:4173/plateau-cityhack-2026-hokudai-son/`.
+- Real Chrome remote debugging used on port `9224`.
+- Verified app boot, PLATEAU 3D tiles, GSI imagery, DEM fetch, inundation display, facility pins, Urban Functions, Future Medical placement, and Future Medical replacement.
+- Verified Cesium `Cesium.js`, `Widgets/widgets.css`, `Assets/...`, and `ThirdParty/draco_decoder.wasm` load from the GitHub Pages subpath with HTTP 200.
+- Clean production runtime check had no console exceptions or network failures.
+- Screenshot: `/tmp/plateau-gh-pages-prod-check-clean.png`.
+
+Static verification:
+
+- `npm run typecheck`: PASS
+- `npm run build`: PASS, including postbuild Cesium static preparation.
+- Final `git diff --check`, `npm run typecheck`, and `npm run build` are still to be rerun after this handoff update.
+
 ## Pre-Presentation Micro UX Fix
 
 Status: PASS as of 2026-09-02.
