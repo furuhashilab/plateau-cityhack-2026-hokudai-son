@@ -16,6 +16,43 @@ Phase 2D — Child-friendly Map-first UI Refactor
 
 Make the current 3D Maizuru experience understandable to elementary school users by making the map dominant, moving technical details into disclosure controls, and using simple Japanese labels.
 
+## Pre-Presentation Micro UX Fix
+
+Status: PASS as of 2026-09-02.
+
+Scope:
+
+- No new features added.
+- Road picking intentionally unchanged; the 3-minute demo should skip road clicking or use a rehearsed click position only if needed.
+
+Implementation:
+
+- `src/components/UrbanFunctionsControl.tsx` changed compact Urban Function chip affected copy from `2こ危` style to `2こ 影響あり`.
+- Future Facility action button now says `未来の{category}を置く` before any future facility exists, and `未来の{category}を置き直す` after a future facility exists.
+- The category name continues to follow the currently focused category.
+
+Chrome verification:
+
+- Dev server used: `http://127.0.0.1:5174/`.
+- Real Chrome remote debugging used on port `9224`.
+- Verified tide `0 m` initial state, then `+2.0 m`.
+- Verified Medical focus shows:
+  - `病院 6こ 2こ 影響あり`
+  - `避難できる場所 8こ 4こ 影響あり`
+  - `交通 1こ 安全`
+  - `くらし 3こ 1こ 影響あり`
+- Verified Future Medical placement from `未来の病院を置く`.
+- Verified button changes to `未来の病院を置き直す` after placement.
+- Verified re-placement creates a new Future Medical scenario.
+- No relevant browser console errors or Vite overlay observed.
+
+Static verification:
+
+- Pending in current session after this handoff update:
+  - `git diff --check`
+  - `npm run typecheck`
+  - `npm run build`
+
 ## Phase 2D Post-UX Improvement Verification
 
 Status: PASS as of 2026-09-01.

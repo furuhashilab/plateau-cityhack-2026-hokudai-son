@@ -31,6 +31,9 @@ export function UrbanFunctionsControl({
   const placing = activeSummary ? placementCategory === activeSummary.category : false;
   const hasProposal = activeSummary ? futureFacility?.category === activeSummary.category : false;
   const proposed = activeSummary ? urbanFunctionSummaryWithProposal(activeSummary, futureFacility) : null;
+  const futureActionLabel = activeSummary
+    ? `未来の${childLabel(activeSummary.category)}を${futureFacility ? "置き直す" : "置く"}`
+    : "";
 
   return (
     <details className="panel urban-functions-panel">
@@ -56,7 +59,7 @@ export function UrbanFunctionsControl({
               <span className="chip-name">{childLabel(summary.category)}</span>
               <span className="chip-total">{summary.totalCount}こ</span>
               <span className={summary.affectedCount > 0 ? "chip-impact affected" : "chip-impact clear"}>
-                {summary.affectedCount > 0 ? `${summary.affectedCount}こ危` : "安全"}
+                {summary.affectedCount > 0 ? `${summary.affectedCount}こ 影響あり` : "安全"}
               </span>
             </button>
           );
@@ -94,7 +97,7 @@ export function UrbanFunctionsControl({
               aria-pressed={placing}
               onClick={() => placing ? onCancelPlacement() : onBeginPlacement(activeSummary.category)}
             >
-              {placing ? "やめる" : `未来の${childLabel(activeSummary.category)}を置く`}
+              {placing ? "やめる" : futureActionLabel}
             </button>
             {placing ? <span>地図をクリック</span> : null}
           </div>
