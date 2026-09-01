@@ -31,38 +31,38 @@ export function createFacilityLayer(viewer: Viewer, facilities: Facility[]): Fac
   const colocatedCoordinateKeys = findColocatedCoordinateKeys(facilities);
   const items = facilities.map((facility) => {
     const category = FACILITY_CATEGORIES.find((candidate) => candidate.id === facility.category)!;
-    const position = Cartesian3.fromDegrees(facility.longitude, facility.latitude, 3);
+    const position = Cartesian3.fromDegrees(facility.longitude, facility.latitude, 12);
     const pixelOffset = colocatedCoordinateKeys.has(coordinateKey(facility))
       ? categoryPixelOffset(facility.category)
       : defaultLabelPixelOffset();
     const point = points.add({
       id: { kind: "facility", facilityId: facility.id } satisfies FacilityPickId,
       position,
-      pixelSize: facility.category === "transport" ? 22 : 18,
-      color: Color.fromCssColorString(category.color),
+      pixelSize: baseMarkerSize(facility.category),
+      color: Color.fromCssColorString(category.color).withAlpha(0.94),
       outlineColor: Color.fromCssColorString("#08111d"),
-      outlineWidth: 3,
+      outlineWidth: 5,
       heightReference: HeightReference.CLAMP_TO_GROUND,
-      scaleByDistance: new NearFarScalar(400, 1.35, 5000, 0.72),
+      scaleByDistance: new NearFarScalar(400, 1.55, 5000, 0.88),
       disableDepthTestDistance: Number.POSITIVE_INFINITY
     });
     const label = labels.add({
       id: { kind: "facility", facilityId: facility.id } satisfies FacilityPickId,
       position,
-      text: category.symbol,
-      font: "700 14px sans-serif",
-      fillColor: Color.WHITE,
-      outlineColor: Color.fromCssColorString("#08111d"),
+      text: markerLabel(facility.category),
+      font: "900 13px sans-serif",
+      fillColor: Color.fromCssColorString("#08111d"),
+      outlineColor: Color.WHITE,
       outlineWidth: 2,
       style: LabelStyle.FILL_AND_OUTLINE,
       verticalOrigin: VerticalOrigin.CENTER,
       pixelOffset,
       showBackground: true,
-      backgroundColor: Color.fromCssColorString("#08111d").withAlpha(0.72),
-      backgroundPadding: new Cartesian2(6, 4),
+      backgroundColor: Color.fromCssColorString(category.color).withAlpha(0.9),
+      backgroundPadding: new Cartesian2(8, 5),
       heightReference: HeightReference.CLAMP_TO_GROUND,
       disableDepthTestDistance: Number.POSITIVE_INFINITY,
-      scaleByDistance: new NearFarScalar(400, 1.1, 5000, 0.75)
+      scaleByDistance: new NearFarScalar(400, 1.16, 5000, 0.82)
     });
     return { facility, point, label };
   });
@@ -84,12 +84,20 @@ export function createFacilityLayer(viewer: Viewer, facilities: Facility[]): Fac
       item.point.outlineColor = affected
         ? Color.fromCssColorString("#7c2d12").withAlpha(focused ? 1 : 0.5)
         : Color.fromCssColorString("#08111d").withAlpha(focused ? 1 : 0.5);
-      item.point.outlineWidth = affected ? 5 : 3;
-      item.point.pixelSize = (item.facility.category === "transport" ? 22 : 18) + (affected ? 4 : 0);
-      item.label.fillColor = focused ? Color.WHITE : Color.WHITE.withAlpha(0.72);
+      item.point.outlineWidth = focused ? affected ? 7 : 5 : 4;
+      item.point.pixelSize = baseMarkerSize(item.facility.category) + (focused ? 4 : -3) + (affected ? 5 : 0);
+      item.label.fillColor = affected
+        ? Color.WHITE.withAlpha(focused ? 1 : 0.72)
+        : focused
+          ? Color.fromCssColorString("#08111d")
+          : Color.fromCssColorString("#08111d").withAlpha(0.72);
+      item.label.outlineColor = affected
+        ? Color.fromCssColorString("#08111d").withAlpha(focused ? 1 : 0.55)
+        : Color.WHITE.withAlpha(focused ? 1 : 0.55);
+      item.label.scale = focused ? 1.14 : 0.92;
       item.label.backgroundColor = (affected
         ? Color.fromCssColorString("#7c2d12")
-        : Color.fromCssColorString("#08111d")).withAlpha(focused ? 0.82 : 0.34);
+        : Color.fromCssColorString(category.color)).withAlpha(focused ? 0.92 : 0.36);
     }
     viewer.scene.requestRender();
   };
@@ -120,20 +128,33 @@ function coordinateKey(facility: Facility) {
 }
 
 export function defaultLabelPixelOffset() {
-  return new Cartesian2(0, -24);
+  return new Cartesian2(0, -34);
 }
 
 export function categoryPixelOffset(category: Facility["category"]) {
   switch (category) {
     case "medical":
-      return new Cartesian2(-28, -28);
+      return new Cartesian2(-36, -36);
     case "evacuation":
-      return new Cartesian2(28, -28);
+      return new Cartesian2(36, -36);
     case "transport":
-      return new Cartesian2(-28, 28);
+      return new Cartesian2(-36, 28);
     case "daily-life":
-      return new Cartesian2(28, 28);
+      return new Cartesian2(36, 28);
   }
+}
+
+function baseMarkerSize(category: Facility["category"]) {
+  return category === "transport" ? 30 : 27;
+}
+
+function markerLabel(category: FacilityCategory) {
+  return ({
+    medical: "病院",
+    evacuation: "避難",
+    transport: "交通",
+    "daily-life": "くらし"
+  } satisfies Record<FacilityCategory, string>)[category];
 }
 
 export function isFacilityPickId(value: unknown): value is FacilityPickId {

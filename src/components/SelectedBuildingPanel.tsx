@@ -5,57 +5,57 @@ type Props = {
 };
 
 const DISPLAY_FIELDS: Array<[keyof BuildingSelection["fields"], string]> = [
-  ["identifier", "Identifier"],
-  ["name", "Name"],
-  ["usage", "Usage"],
-  ["measuredHeight", "Measured height"]
+  ["identifier", "建物ID"],
+  ["name", "名前"],
+  ["usage", "使い方"],
+  ["measuredHeight", "高さ"]
 ];
 
 export function SelectedBuildingPanel({ selection }: Props) {
   return (
     <div className="panel selected-panel">
-      <div className="eyebrow">Selected building</div>
+      <div className="eyebrow">選んだ建物</div>
       {!selection ? (
-        <p className="muted">Click a PLATEAU building to inspect available attributes.</p>
+        <p className="muted">建物をクリックすると情報を見られます。</p>
       ) : (
         <>
           <dl>
             {DISPLAY_FIELDS.map(([key, label]) => (
               <div key={key}>
                 <dt>{label}</dt>
-                <dd>{selection.fields[key] ?? "Unknown"}</dd>
+                <dd>{selection.fields[key] ?? "わからない"}</dd>
               </div>
             ))}
             <div>
-              <dt>Ground elevation</dt>
+              <dt>地面の高さ</dt>
               <dd>{formatMeters(selection.inundation.groundElevationMeters)}</dd>
             </div>
             <div>
-              <dt>Scenario tide</dt>
+              <dt>海の水位</dt>
               <dd>{formatMeters(selection.inundation.tideLevelMeters, true)}</dd>
             </div>
             <div>
-              <dt>Method</dt>
-              <dd>{selection.inundation.method === "sea-connected" ? "Sea-connected" : "Elevation-only"}</dd>
+              <dt>見方</dt>
+              <dd>{selection.inundation.method === "sea-connected" ? "海から水が入る場所" : "海より低い場所"}</dd>
             </div>
             {selection.inundation.method === "sea-connected" ? (
               <div>
-                <dt>Connected to sea</dt>
-                <dd>{selection.inundation.connectedToSea === null ? "Unknown" : selection.inundation.connectedToSea ? "Yes" : "No"}</dd>
+                <dt>海とつながる</dt>
+                <dd>{selection.inundation.connectedToSea === null ? "わからない" : selection.inundation.connectedToSea ? "はい" : "いいえ"}</dd>
               </div>
             ) : null}
             <div>
-              <dt>Potential depth</dt>
+              <dt>水の深さ</dt>
               <dd>{formatMeters(selection.inundation.depthMeters)}</dd>
             </div>
             <div>
-              <dt>Status</dt>
-              <dd>{selection.inundation.status ?? "Unknown"}</dd>
+              <dt>状態</dt>
+              <dd>{selection.inundation.depthMeters === null ? "わからない" : selection.inundation.depthMeters > 0 ? "水の影響を受けるかも" : "水の影響を受けなさそう"}</dd>
             </div>
           </dl>
           <details>
-            <summary>Available properties ({selection.availablePropertyIds.length})</summary>
-            <p>{selection.availablePropertyIds.length > 0 ? selection.availablePropertyIds.join(", ") : "Unknown"}</p>
+            <summary>詳しい属性 ({selection.availablePropertyIds.length})</summary>
+            <p>{selection.availablePropertyIds.length > 0 ? selection.availablePropertyIds.join(", ") : "わからない"}</p>
           </details>
         </>
       )}
@@ -64,6 +64,6 @@ export function SelectedBuildingPanel({ selection }: Props) {
 }
 
 function formatMeters(value: number | null, includeSign = false) {
-  if (value === null) return "Unknown";
+  if (value === null) return "わからない";
   return `${includeSign && value >= 0 ? "+" : ""}${value.toFixed(1)} m`;
 }

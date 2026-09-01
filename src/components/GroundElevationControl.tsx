@@ -9,12 +9,12 @@ type Props = {
 
 export function GroundElevationControl({ enabled, loading, error, onChange }: Props) {
   return (
-    <div className="panel elevation-panel">
-      <div className="layer-kind">Base / terrain view</div>
+    <div className="advanced-block elevation-panel">
+      <div className="layer-kind">地形</div>
       <label className="elevation-toggle">
         <span>
-          <strong>Ground Elevation</strong>
-          <small>{loading ? "Loading official elevation data…" : "Show low and high ground"}</small>
+          <strong>地面の高さを見る</strong>
+          <small>{loading ? "高さデータを読み込み中" : "低い場所と高い場所を色で見る"}</small>
         </span>
         <input
           type="checkbox"
@@ -34,13 +34,13 @@ export function GroundElevationControl({ enabled, loading, error, onChange }: Pr
           <p>Elevation above mean sea level. Blue areas are lower.</p>
         </div>
       ) : null}
-      {error ? <p className="elevation-error">Elevation unavailable: {error}</p> : null}
-      <details>
-        <summary>Data provenance</summary>
+      {error ? <p className="elevation-error">地面の高さを表示できません: {error}</p> : null}
+      <details className="soft-details">
+        <summary>データの出どころ</summary>
         <p>
-          Color/data: {MAIZURU_GROUND_ELEVATION.label}, {MAIZURU_GROUND_ELEVATION.nominalResolutionMeters} m,
+          色とデータ: {MAIZURU_GROUND_ELEVATION.label}, {MAIZURU_GROUND_ELEVATION.nominalResolutionMeters} m,
           {` ${MAIZURU_GROUND_ELEVATION.source}. `}
-          Displayed as a lightweight raster on the Cesium ellipsoid surface. The decoded orthometric elevations remain available for future flood calculations.
+          Cesium上に軽い画像として表示しています。
         </p>
       </details>
     </div>

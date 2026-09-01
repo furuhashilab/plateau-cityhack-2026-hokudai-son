@@ -6,23 +6,23 @@ type Props = {
 
 export function StatusOverlay({ status }: Props) {
   return (
-    <div className="panel status-panel">
+    <div className="advanced-block status-panel">
       <div className="status-line">
         <span className={`status-dot ${status.phase}`} />
-        <strong>{status.message}</strong>
+        <strong>{status.message === "Ready" ? "準備できました" : status.message}</strong>
       </div>
       <dl>
         <div>
-          <dt>Initial load</dt>
+          <dt>読み込み</dt>
           <dd>{formatMs(status.initialLoadMs)}</dd>
         </div>
         <div>
-          <dt>Interactive</dt>
+          <dt>操作可能</dt>
           <dd>{formatMs(status.interactiveMs)}</dd>
         </div>
         <div>
-          <dt>Tiles</dt>
-          <dd>{status.loadedTiles} loaded / {status.pendingTiles} pending</dd>
+          <dt>建物</dt>
+          <dd>{status.loadedTiles} 読み込み / {status.pendingTiles} 待ち</dd>
         </div>
         <div>
           <dt>FPS</dt>
@@ -38,5 +38,5 @@ export function StatusOverlay({ status }: Props) {
 }
 
 function formatMs(value: number | null) {
-  return value == null ? "Measuring" : `${(value / 1000).toFixed(2)} s`;
+  return value == null ? "計測中" : `${(value / 1000).toFixed(2)} s`;
 }

@@ -13,13 +13,15 @@ type Props = {
 
 export function InundationControl(props: Props) {
   return (
-    <div className="panel inundation-panel">
-      <div className="layer-kind">Hazard overlay</div>
-      <div className="scenario-label">Scenario · User-defined stress test</div>
+    <div className="panel water-panel">
+      <div className="water-heading">
+        <span>海の水を上げてみよう</span>
+        <strong>+{props.tideLevelMeters.toFixed(1)} m</strong>
+      </div>
       <label className="elevation-toggle">
         <span>
-          <strong>Simplified Inundation</strong>
-          <small>Elevation-based potential, not a forecast</small>
+          <strong>水が来るか見る</strong>
+          <small>ためしの水位です。予報ではありません。</small>
         </span>
         <input
           type="checkbox"
@@ -28,30 +30,8 @@ export function InundationControl(props: Props) {
           onChange={(event) => props.onEnabledChange(event.target.checked)}
         />
       </label>
-      <fieldset className="method-control">
-        <legend>Method</legend>
-        <label>
-          <input
-            type="radio"
-            name="inundation-method"
-            checked={props.method === "elevation-only"}
-            onChange={() => props.onMethodChange("elevation-only")}
-          />
-          <span><strong>Elevation-only</strong><small>All ground below the tide level.</small></span>
-        </label>
-        <label>
-          <input
-            type="radio"
-            name="inundation-method"
-            checked={props.method === "sea-connected"}
-            onChange={() => props.onMethodChange("sea-connected")}
-          />
-          <span><strong>Sea-connected</strong><small>Only low ground continuously connected to the sea.</small></span>
-        </label>
-      </fieldset>
       <label className="tide-control">
-        <span>Tide Level</span>
-        <strong>Current scenario: +{props.tideLevelMeters.toFixed(1)} m</strong>
+        <span>今の水位</span>
         <input
           type="range"
           min={TIDE_LEVEL.minMeters}
@@ -62,24 +42,43 @@ export function InundationControl(props: Props) {
         />
         <span className="range-labels"><span>0.0 m</span><span>5.0 m</span></span>
       </label>
-      {props.enabled ? (
-        <div className="elevation-legend" aria-label="Potential inundation depth legend">
-          {INUNDATION_BANDS.map((band) => (
-            <div key={band.label}>
-              <span className="legend-swatch" style={{ backgroundColor: band.color }} />
-              <span>{band.label}</span>
-            </div>
-          ))}
-        </div>
-      ) : null}
       {props.error ? <p className="elevation-error">Inundation unavailable: {props.error}</p> : null}
-      <details>
-        <summary>Method & provenance</summary>
+      <details className="soft-details">
+        <summary>詳しい水の見方</summary>
+        <fieldset className="method-control">
+          <legend>水の広がり方</legend>
+          <label>
+            <input
+              type="radio"
+              name="inundation-method"
+              checked={props.method === "sea-connected"}
+              onChange={() => props.onMethodChange("sea-connected")}
+            />
+            <span><strong>海から水が入る場所</strong><small>海とつながる低い場所だけを見ます。</small></span>
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="inundation-method"
+              checked={props.method === "elevation-only"}
+              onChange={() => props.onMethodChange("elevation-only")}
+            />
+            <span><strong>海より低い場所</strong><small>水位より低い地面をぜんぶ見ます。</small></span>
+          </label>
+        </fieldset>
+        {props.enabled ? (
+          <div className="elevation-legend" aria-label="水の深さの凡例">
+            {INUNDATION_BANDS.map((band) => (
+              <div key={band.label}>
+                <span className="legend-swatch" style={{ backgroundColor: band.color }} />
+                <span>{band.label}</span>
+              </div>
+            ))}
+          </div>
+        ) : null}
         <p>
-          Ground elevation: GSI DEM5A. Elevation-only highlights all lower ground. Sea-connected
-          uses AOI-boundary-connected DEM NoData as a sea mask and 4-neighbor terrain connectivity.
-          Depth = tide level − ground elevation for included cells. This is not a hydraulic simulation
-          or official storm-surge map; drainage, gates, pumps, waves, velocity, levees, and time are omitted.
+          地面の高さはGSI DEM5Aを使っています。水の深さは「水位 - 地面の高さ」で計算します。
+          これは公式の高潮予報ではなく、街を考えるためのシナリオです。
         </p>
       </details>
     </div>

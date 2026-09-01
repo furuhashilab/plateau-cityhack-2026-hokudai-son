@@ -3,6 +3,7 @@ import { inundationDepth, type InundationMethod } from "./inundation";
 import type { LoadedGroundElevation } from "./groundElevation";
 import type { SeaConnectivity } from "./seaConnectivity";
 import type { Facility, FacilityCategory, FacilitySelection } from "../types/facility";
+import type { FutureFacilityScenario } from "../types/futureFacility";
 
 export type UrbanFunctionSummary = {
   category: FacilityCategory;
@@ -20,17 +21,37 @@ export type UrbanFunctionImpactState = {
   affectedFacilityIds: Set<string>;
 };
 
+export type ScenarioPointImpact = Omit<FacilitySelection, "facility">;
+
 export function computeFacilityScenarioImpact(
   facility: Facility,
   groundElevation: LoadedGroundElevation | null,
   seaConnectivity: SeaConnectivity | null,
   tideLevelMeters: number,
   method: InundationMethod
-): Omit<FacilitySelection, "facility"> {
-  const groundElevationMeters = groundElevation?.sampleMeters(facility.longitude, facility.latitude) ?? null;
-  const connectionThresholdMeters = seaConnectivity?.sampleConnectionThresholdMeters(
+): ScenarioPointImpact {
+  return computeScenarioPointImpact(
     facility.longitude,
-    facility.latitude
+    facility.latitude,
+    groundElevation,
+    seaConnectivity,
+    tideLevelMeters,
+    method
+  );
+}
+
+export function computeScenarioPointImpact(
+  longitude: number,
+  latitude: number,
+  groundElevation: LoadedGroundElevation | null,
+  seaConnectivity: SeaConnectivity | null,
+  tideLevelMeters: number,
+  method: InundationMethod
+): ScenarioPointImpact {
+  const groundElevationMeters = groundElevation?.sampleMeters(longitude, latitude) ?? null;
+  const connectionThresholdMeters = seaConnectivity?.sampleConnectionThresholdMeters(
+    longitude,
+    latitude
   ) ?? null;
   const connectedToSea = connectionThresholdMeters === null ? null : connectionThresholdMeters <= tideLevelMeters;
   const depthMeters = groundElevationMeters === null
@@ -47,6 +68,21 @@ export function computeFacilityScenarioImpact(
     connectionThresholdMeters,
     connectedToSea,
     status: facilityStatus(depthMeters)
+  };
+}
+
+export function urbanFunctionSummaryWithProposal(
+  summary: UrbanFunctionSummary,
+  futureFacility: FutureFacilityScenario | null
+) {
+  const includesProposal = futureFacility?.category === summary.category;
+  const proposalAffected = includesProposal && (futureFacility.impact.depthMeters ?? 0) > 0;
+  const proposalUnaffected = includesProposal && futureFacility.impact.depthMeters === 0;
+
+  return {
+    totalCount: summary.totalCount + (includesProposal ? 1 : 0),
+    affectedCount: summary.affectedCount + (proposalAffected ? 1 : 0),
+    unaffectedCount: summary.unaffectedCount + (proposalUnaffected ? 1 : 0)
   };
 }
 

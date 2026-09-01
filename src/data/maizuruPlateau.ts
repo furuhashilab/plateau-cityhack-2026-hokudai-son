@@ -21,14 +21,14 @@ export const MAIZURU_PLATEAU_BUILDINGS: PlateauTilesetDataset = {
 
 export const MAIZURU_CAMERA = {
   initialOffset: new HeadingPitchRange(
-    CesiumMath.toRadians(35),
-    CesiumMath.toRadians(-32),
-    1800
+    CesiumMath.toRadians(52),
+    CesiumMath.toRadians(-26),
+    1250
   ),
-  fallbackDestination: Cartesian3.fromDegrees(135.3337, 35.4498, 1700),
+  fallbackDestination: Cartesian3.fromDegrees(135.3337, 35.4498, 1250),
   fallbackOrientation: {
-    heading: CesiumMath.toRadians(30),
-    pitch: CesiumMath.toRadians(-35),
+    heading: CesiumMath.toRadians(52),
+    pitch: CesiumMath.toRadians(-28),
     roll: 0
   }
 };

@@ -19,6 +19,9 @@ import { findNearestRoadId, findNearestRoadIdFromClickPosition, roadPickIdFromPi
 import { WEST_MAIZURU_ROAD_PROOF } from "../data/roads";
 import type { RoadSelection } from "../types/road";
 import { computeFacilityScenarioImpact } from "../data/urbanFunctions";
+import type { FacilityCategory } from "../types/facility";
+import { isFutureFacilityPickId } from "./futureFacilityLayer";
+import type { FutureFacilityScenario } from "../types/futureFacility";
 
 type MutableFeature = Cesium3DTileFeature & {
   color?: Color;
@@ -41,25 +44,61 @@ export function attachBuildingPicking(
   getFacilityVisibility: () => FacilityCategoryVisibility,
   onFacilitySelect: (selection: FacilitySelection | null) => void,
   getRoadSelection: (roadId: string) => RoadSelection | null,
-  onRoadSelect: (selection: RoadSelection | null) => void
+  onRoadSelect: (selection: RoadSelection | null) => void,
+  getPlacementCategory: () => FacilityCategory | null,
+  onFutureFacilityPlace: (placement: { category: FacilityCategory; longitude: number; latitude: number }) => void,
+  getFutureFacility: () => FutureFacilityScenario | null,
+  onFutureFacilitySelect: (facility: FutureFacilityScenario | null) => void
 ) {
   const handler = new ScreenSpaceEventHandler(viewer.scene.canvas);
   let highlighted: MutableFeature | null = null;
   let previousColor: Color | null = null;
 
   handler.setInputAction((click: ScreenSpaceEventHandler.PositionedEvent) => {
+    const placementCategory = getPlacementCategory();
+    if (placementCategory) {
+      const cartographic = cartographicFromClick(viewer, click.position);
+      if (cartographic) {
+        clearHighlight();
+        onBuildingSelect(null);
+        onFacilitySelect(null);
+        onRoadSelect(null);
+        onFutureFacilitySelect(null);
+        onFutureFacilityPlace({
+          category: placementCategory,
+          longitude: cartographic.longitude * 180 / Math.PI,
+          latitude: cartographic.latitude * 180 / Math.PI
+        });
+        viewer.scene.requestRender();
+      }
+      return;
+    }
+
     const pickedObjects = viewer.scene.drillPick(click.position, 8);
+    const futurePick = pickedObjects.find((candidate) =>
+      isFutureFacilityPickId((candidate as { id?: unknown }).id)
+    );
     const facilityPick = pickedObjects.find((candidate) =>
       isFacilityPickId((candidate as { id?: unknown }).id)
     );
     const buildingPick = pickedObjects.find((candidate) => candidate instanceof Cesium3DTileFeature);
     const roadPick = pickedObjects.find((candidate) => roadPickIdFromPickedObject(candidate));
-    const picked = facilityPick ?? buildingPick ?? roadPick ?? pickedObjects[0] ?? viewer.scene.pick(click.position);
+    const picked = futurePick ?? facilityPick ?? buildingPick ?? roadPick ?? pickedObjects[0] ?? viewer.scene.pick(click.position);
     const pickedId = (picked as { id?: unknown } | undefined)?.id;
+    if (isFutureFacilityPickId(pickedId)) {
+      clearHighlight();
+      onBuildingSelect(null);
+      onFacilitySelect(null);
+      onRoadSelect(null);
+      onFutureFacilitySelect(getFutureFacility());
+      viewer.scene.requestRender();
+      return;
+    }
     if (isFacilityPickId(pickedId)) {
       clearHighlight();
       onBuildingSelect(null);
       onRoadSelect(null);
+      onFutureFacilitySelect(null);
       selectFacilityById(pickedId.facilityId);
       viewer.scene.requestRender();
       return;
@@ -69,6 +108,7 @@ export function attachBuildingPicking(
       clearHighlight();
       onBuildingSelect(null);
       onRoadSelect(null);
+      onFutureFacilitySelect(null);
       selectFacility(nearbyFacility);
       viewer.scene.requestRender();
       return;
@@ -81,6 +121,7 @@ export function attachBuildingPicking(
       clearHighlight();
       onBuildingSelect(null);
       onFacilitySelect(null);
+      onFutureFacilitySelect(null);
       onRoadSelect(getRoadSelection(nearbyRoadId));
       viewer.scene.requestRender();
       return;
@@ -90,6 +131,7 @@ export function attachBuildingPicking(
       onBuildingSelect(null);
       onFacilitySelect(null);
       onRoadSelect(null);
+      onFutureFacilitySelect(null);
       viewer.scene.requestRender();
       return;
     }
@@ -97,14 +139,12 @@ export function attachBuildingPicking(
     clearHighlight();
     onFacilitySelect(null);
     onRoadSelect(null);
+    onFutureFacilitySelect(null);
     highlighted = picked as MutableFeature;
     previousColor = Color.clone(highlighted.color ?? Color.WHITE);
     highlighted.color = Color.fromCssColorString("#facc15").withAlpha(0.88);
 
-    const ray = viewer.camera.getPickRay(click.position);
-    const cartesian = viewer.scene.pickPosition(click.position)
-      ?? (ray ? viewer.scene.globe.pick(ray, viewer.scene) : undefined);
-    const cartographic = cartesian ? Cartographic.fromCartesian(cartesian) : null;
+    const cartographic = cartographicFromClick(viewer, click.position);
     const groundElevationMeters = cartographic
       ? getGroundElevation()?.sampleMeters(
           cartographic.longitude * 180 / Math.PI,
@@ -195,6 +235,14 @@ export function attachBuildingPicking(
     clearHighlight();
     handler.destroy();
   };
+}
+
+function cartographicFromClick(viewer: Viewer, position: Cartesian2) {
+  const ray = viewer.camera.getPickRay(position);
+  const cartesian = viewer.scene.pickPosition(position)
+    ?? (ray ? viewer.scene.globe.pick(ray, viewer.scene) : undefined)
+    ?? viewer.camera.pickEllipsoid(position, viewer.scene.globe.ellipsoid);
+  return cartesian ? Cartographic.fromCartesian(cartesian) : null;
 }
 
 function pickNearbyFacility(

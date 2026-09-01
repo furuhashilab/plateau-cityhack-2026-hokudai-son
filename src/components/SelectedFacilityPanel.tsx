@@ -4,34 +4,34 @@ export function SelectedFacilityPanel({ selection }: { selection: FacilitySelect
   const { facility } = selection;
   return (
     <div className="panel selected-panel facility-panel">
-      <div className="eyebrow">Selected facility</div>
+      <div className="eyebrow">選んだ施設</div>
       <h2>{facility.name}</h2>
       <dl>
-        <div><dt>Category</dt><dd>{categoryLabel(facility.category)}</dd></div>
-        <div><dt>Type</dt><dd>{facility.facilityType}</dd></div>
-        <div><dt>Ground elevation</dt><dd>{formatMeters(selection.groundElevationMeters)}</dd></div>
-        <div><dt>Scenario tide</dt><dd>{formatMeters(selection.tideLevelMeters, true)}</dd></div>
-        <div><dt>Method</dt><dd>{selection.method === "sea-connected" ? "Sea-connected" : "Elevation-only"}</dd></div>
+        <div><dt>種類</dt><dd>{categoryLabel(facility.category)}</dd></div>
+        <div><dt>施設</dt><dd>{facility.facilityType}</dd></div>
+        <div><dt>地面の高さ</dt><dd>{formatMeters(selection.groundElevationMeters)}</dd></div>
+        <div><dt>海の水位</dt><dd>{formatMeters(selection.tideLevelMeters, true)}</dd></div>
+        <div><dt>見方</dt><dd>{selection.method === "sea-connected" ? "海から水が入る場所" : "海より低い場所"}</dd></div>
         {selection.method === "sea-connected" ? (
-          <div><dt>Connected to sea</dt><dd>{selection.connectedToSea === null ? "Unknown" : selection.connectedToSea ? "Yes" : "No"}</dd></div>
+          <div><dt>海とつながる</dt><dd>{selection.connectedToSea === null ? "わからない" : selection.connectedToSea ? "はい" : "いいえ"}</dd></div>
         ) : null}
-        <div><dt>Potential depth</dt><dd>{formatMeters(selection.depthMeters)}</dd></div>
-        <div><dt>Status</dt><dd className={`facility-status ${selection.status?.toLowerCase() ?? "unknown"}`}>{selection.status ?? "Unknown"}</dd></div>
-        <div><dt>Source</dt><dd><a href={facility.sourceUrl} target="_blank" rel="noreferrer">{facility.source}</a></dd></div>
-        <div><dt>Provenance</dt><dd>{facility.provenance}</dd></div>
+        <div><dt>水の深さ</dt><dd>{formatMeters(selection.depthMeters)}</dd></div>
+        <div><dt>状態</dt><dd className={`facility-status ${selection.status?.toLowerCase() ?? "unknown"}`}>{selection.depthMeters === null ? "わからない" : selection.depthMeters > 0 ? "水の影響を受けるかも" : "水の影響を受けなさそう"}</dd></div>
+        <div><dt>出どころ</dt><dd><a href={facility.sourceUrl} target="_blank" rel="noreferrer">{facility.source}</a></dd></div>
+        <div><dt>データ</dt><dd>{facility.provenance}</dd></div>
         <div>
-          <dt>PLATEAU link</dt>
+          <dt>PLATEAU</dt>
           <dd className={`plateau-link-status ${facility.plateauLinkStatus}`}>{plateauLinkLabel(facility.plateauLinkStatus)}</dd>
         </div>
         {facility.plateauBuildingId ? (
           <div>
-            <dt>Building ID</dt>
+            <dt>建物ID</dt>
             <dd>{facility.plateauBuildingId}</dd>
           </div>
         ) : null}
         {facility.plateauLinkNote ? (
           <div>
-            <dt>Link note</dt>
+            <dt>メモ</dt>
             <dd>{facility.plateauLinkNote}</dd>
           </div>
         ) : null}
@@ -41,14 +41,14 @@ export function SelectedFacilityPanel({ selection }: { selection: FacilitySelect
 }
 
 function categoryLabel(category: string) {
-  return ({ medical: "Medical", evacuation: "Evacuation", transport: "Transport", "daily-life": "Daily Life" } as Record<string, string>)[category] ?? category;
+  return ({ medical: "病院", evacuation: "避難できる場所", transport: "交通", "daily-life": "くらし" } as Record<string, string>)[category] ?? category;
 }
 
 function formatMeters(value: number | null, includeSign = false) {
-  if (value === null) return "Unknown";
+  if (value === null) return "わからない";
   return `${includeSign && value >= 0 ? "+" : ""}${value.toFixed(1)} m`;
 }
 
 function plateauLinkLabel(status: string) {
-  return ({ verified: "Verified", candidate: "Candidate", unlinked: "Unlinked" } as Record<string, string>)[status] ?? "Unknown";
+  return ({ verified: "確認済み", candidate: "候補", unlinked: "未確認" } as Record<string, string>)[status] ?? "わからない";
 }

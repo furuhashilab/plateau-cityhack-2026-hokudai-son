@@ -6,29 +6,31 @@ type Props = {
 
 export function DataBadge({ dataset }: Props) {
   return (
-    <div className="panel data-badge">
-      <div className="eyebrow">Maizuru City</div>
-      <h1>PLATEAU 2025</h1>
+    <details className="plateau-badge">
+      <summary>
+        <span>PLATEAU 2025</span>
+        <strong>舞鶴の3D都市</strong>
+      </summary>
       <dl>
         <div>
-          <dt>Data</dt>
+          <dt>データ</dt>
           <dd>{dataset.label}</dd>
         </div>
         <div>
-          <dt>Source</dt>
+          <dt>出どころ</dt>
           <dd>{dataset.source}</dd>
         </div>
         <div>
-          <dt>Format</dt>
+          <dt>形式</dt>
           <dd>{dataset.format}</dd>
         </div>
         <div>
-          <dt>AOI</dt>
+          <dt>範囲</dt>
           <dd>{dataset.aoiLabel}</dd>
         </div>
         {dataset.heightOffsetMeters !== undefined ? (
           <div>
-            <dt>Height offset</dt>
+            <dt>高さ補正</dt>
             <dd>
               {dataset.heightOffsetMeters}m
               {dataset.heightOffsetReason ? ` (${dataset.heightOffsetReason})` : null}
@@ -36,6 +38,6 @@ export function DataBadge({ dataset }: Props) {
           </div>
         ) : null}
       </dl>
-    </div>
+    </details>
   );
 }

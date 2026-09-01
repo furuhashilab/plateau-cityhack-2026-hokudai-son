@@ -10,11 +10,115 @@ Codex (GPT-5)
 
 ## Current Phase
 
-Phase 2C.1 — Urban Function Experience MVP RESTORED
+Phase 2D — Child-friendly Map-first UI Refactor
 
 ## Current Goal
 
-Restore the Phase 2B.1 + Phase 2C.1 integration after commit separation left Urban Function wiring partially disconnected.
+Make the current 3D Maizuru experience understandable to elementary school users by making the map dominant, moving technical details into disclosure controls, and using simple Japanese labels.
+
+## Phase 2D Status
+
+Status: PASS as of 2026-09-01.
+
+Implementation:
+
+- The initial screen is map-first: small `PLATEAU 2025 / 舞鶴の3D都市` badge, one primary water panel, one collapsed Urban Functions panel, and one collapsed advanced panel.
+- Empty selected-building inspector is no longer shown.
+- FPS, heap, tile counts, DEM toggle, data provenance, and PLATEAU technical details are hidden behind `詳しく見る`.
+- The water panel is the primary visible control and starts open with `海の水を上げてみよう`, current water level, inundation toggle, and tide slider.
+- Inundation method labels are now child-friendly Japanese:
+  - `Sea-connected` -> `海から水が入る場所`
+  - `Elevation-only` -> `海より低い場所`
+- Urban Functions are collapsed by default as `街の施設を見る`, with compact child-friendly labels:
+  - Medical -> `病院`
+  - Evacuation -> `避難できる場所`
+  - Transport -> `交通`
+  - Daily Life -> `くらし`
+- Potential impact copy is now `水の影響を受けるかも`; unaffected copy is `だいじょうぶそう`.
+- Future facility entry copy is now `未来の病院を置く` etc.
+- Placement mode displays `地図をクリックして未来の病院を置いてみよう`.
+- Future Facility inspector puts the plain result first:
+  - `この場所は水の影響を受けなさそう`
+  - `この場所は水の影響を受けるかも`
+- Facility and building inspectors now use Japanese labels.
+- Road inspector labels were translated but still explicitly avoids access/closure claims.
+- Initial camera moved closer and shallower to make the 3D city read less like a flat GIS overview.
+
+Runtime verification:
+
+- Dev server used: `http://127.0.0.1:5173/`
+- Chrome remote debugging used on port `9224`.
+- 1440x900 initial visible UI area measured about `14.4%`, down from prior audit's about `43.6%` panel area.
+- Initial screenshot: `/tmp/plateau-phase2d-final-initial.png`
+- Urban panel open screenshot: `/tmp/plateau-phase2d-final-open.png`
+- Water slider was immediately visible and updated to `+2.0 m`.
+- Urban panel could be expanded; Medical focus worked.
+- Future Medical placement guide appeared, placement worked, and the proposed-facility inspector showed the simplified result first.
+- Advanced panel revealed DEM/status details when opened.
+- Real facility picking verified.
+- Building picking verified.
+- Road picking verified.
+- Road stats remained `48` road features and `1,400` samples.
+- Runtime performance observed: FPS ranged about `33-58` during automated interaction with advanced/details open; JS heap about `136-142 MB`; loaded building tile sample about `97 loaded / 0 pending`.
+
+Static verification:
+
+- `git diff --check`: PASS
+- `npm run typecheck`: PASS
+- `npm run build`: PASS
+
+Known limitations:
+
+- Urban Functions panel still becomes tall when opened; acceptable for this pass but should become a smaller bottom sheet or step card later.
+- The water panel is much clearer but still occupies the lower center of the city view.
+- Terrain map labels and contour lines remain visually strong; further PLATEAU-first polish may need basemap/imagery tuning.
+- Non-fatal Cesium internal `DeveloperError` promise noise remains during reload.
+
+## Phase 2C.2 Status
+
+Status: PASS as of 2026-09-01.
+
+Implementation:
+
+- `src/types/futureFacility.ts` defines a single `FutureFacilityScenario`.
+- `src/cesium/futureFacilityLayer.ts` renders one distinct scenario marker and label.
+- `src/components/SelectedFutureFacilityPanel.tsx` inspects the proposed facility and supports Remove.
+- `src/components/UrbanFunctionsControl.tsx` adds `+ Future ...` placement actions and a current/with-proposal comparison for the proposal category.
+- `src/components/CesiumViewport.tsx` consumes placement-mode map clicks, samples DEM and sea-connectivity, recalculates future facility impact on tide/method changes, and keeps road/facility/building picking intact in normal mode.
+- `src/data/urbanFunctions.ts` exposes `computeScenarioPointImpact()` so real facilities and proposed facilities reuse the same inundation semantics.
+
+Scope:
+
+- Supports one proposed facility at a time.
+- Placement actions are available for Medical, Evacuation, Transport, and Daily Life; MVP verification focused on Future Medical.
+- Road layer remains visual context only. No route/accessibility claim is made.
+- No optimization, best-location recommendation, resilience score, routing, network graph, census aggregation, CSV/XLSX, full-road expansion, or backflow layer was added.
+
+Runtime verification:
+
+- Dev server used: `http://127.0.0.1:5174/`
+- Chrome remote debugging used on port `9224`.
+- Future Medical placement verified.
+- Scenario marker and `Future Medical Facility` label verified through Cesium layer state and selected panel.
+- Selected Future Facility panel showed longitude, latitude, ground elevation, scenario tide, method, sea-connected state, potential depth, scenario provenance, and Remove.
+- Remove verified; future hook became `null`, panel returned to default selected-building prompt, and comparison disappeared.
+- Re-placement verified at a second map location.
+- Tide/method verification for placed Future Medical:
+  - Elevation-only at `0`, `1`, `1.5`, `2 m` updated future impact and Medical with-proposal counts.
+  - Sea-connected at `0`, `1`, `1.5`, `2 m` updated future impact and Medical with-proposal counts.
+- A proposal that was currently unaffected incremented Medical with-proposal unaffected count.
+- A proposal that was potentially affected incremented total but did not increment unaffected count.
+- Urban Function focus still worked; Evacuation focus was verified after placement.
+- Real facility picking verified with `文化公園体育館`.
+- Building picking verified with a PLATEAU building identifier panel.
+- Road picking verified with an OSM road panel.
+- Road stats remained `48` road features and `1,400` samples.
+- Runtime status observed: Ready, PLATEAU `125 loaded / 0 pending`, FPS about `57-61`, JS heap about `153-235 MB`.
+
+Known runtime notes:
+
+- Reload still reports non-fatal Cesium internal `DeveloperError` promise exceptions; the app remains Ready.
+- Chrome emits local keychain/updater/crashpad noise unrelated to app behavior.
 
 ## Latest Restoration Status
 
