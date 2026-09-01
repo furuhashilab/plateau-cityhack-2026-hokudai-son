@@ -31,7 +31,7 @@ export function createFacilityLayer(viewer: Viewer, facilities: Facility[]): Fac
   const colocatedCoordinateKeys = findColocatedCoordinateKeys(facilities);
   const items = facilities.map((facility) => {
     const category = FACILITY_CATEGORIES.find((candidate) => candidate.id === facility.category)!;
-    const position = Cartesian3.fromDegrees(facility.longitude, facility.latitude, 12);
+    const position = Cartesian3.fromDegrees(facility.longitude, facility.latitude, 14);
     const pixelOffset = colocatedCoordinateKeys.has(coordinateKey(facility))
       ? categoryPixelOffset(facility.category)
       : defaultLabelPixelOffset();
@@ -39,18 +39,18 @@ export function createFacilityLayer(viewer: Viewer, facilities: Facility[]): Fac
       id: { kind: "facility", facilityId: facility.id } satisfies FacilityPickId,
       position,
       pixelSize: baseMarkerSize(facility.category),
-      color: Color.fromCssColorString(category.color).withAlpha(0.94),
+      color: Color.fromCssColorString(category.color).withAlpha(0.96),
       outlineColor: Color.fromCssColorString("#08111d"),
       outlineWidth: 5,
       heightReference: HeightReference.CLAMP_TO_GROUND,
-      scaleByDistance: new NearFarScalar(400, 1.55, 5000, 0.88),
+      scaleByDistance: new NearFarScalar(300, 1.75, 4000, 0.95),
       disableDepthTestDistance: Number.POSITIVE_INFINITY
     });
     const label = labels.add({
       id: { kind: "facility", facilityId: facility.id } satisfies FacilityPickId,
       position,
       text: markerLabel(facility.category),
-      font: "900 13px sans-serif",
+      font: "900 14px sans-serif",
       fillColor: Color.fromCssColorString("#08111d"),
       outlineColor: Color.WHITE,
       outlineWidth: 2,
@@ -58,11 +58,11 @@ export function createFacilityLayer(viewer: Viewer, facilities: Facility[]): Fac
       verticalOrigin: VerticalOrigin.CENTER,
       pixelOffset,
       showBackground: true,
-      backgroundColor: Color.fromCssColorString(category.color).withAlpha(0.9),
-      backgroundPadding: new Cartesian2(8, 5),
+      backgroundColor: Color.fromCssColorString(category.color).withAlpha(0.92),
+      backgroundPadding: new Cartesian2(9, 6),
       heightReference: HeightReference.CLAMP_TO_GROUND,
       disableDepthTestDistance: Number.POSITIVE_INFINITY,
-      scaleByDistance: new NearFarScalar(400, 1.16, 5000, 0.82)
+      scaleByDistance: new NearFarScalar(300, 1.22, 4000, 0.86)
     });
     return { facility, point, label };
   });
@@ -84,8 +84,8 @@ export function createFacilityLayer(viewer: Viewer, facilities: Facility[]): Fac
       item.point.outlineColor = affected
         ? Color.fromCssColorString("#7c2d12").withAlpha(focused ? 1 : 0.5)
         : Color.fromCssColorString("#08111d").withAlpha(focused ? 1 : 0.5);
-      item.point.outlineWidth = focused ? affected ? 7 : 5 : 4;
-      item.point.pixelSize = baseMarkerSize(item.facility.category) + (focused ? 4 : -3) + (affected ? 5 : 0);
+      item.point.outlineWidth = focused ? affected ? 7 : 6 : 3;
+      item.point.pixelSize = baseMarkerSize(item.facility.category) + (focused ? 5 : -4) + (affected ? 5 : 0);
       item.label.fillColor = affected
         ? Color.WHITE.withAlpha(focused ? 1 : 0.72)
         : focused
@@ -145,7 +145,7 @@ export function categoryPixelOffset(category: Facility["category"]) {
 }
 
 function baseMarkerSize(category: Facility["category"]) {
-  return category === "transport" ? 30 : 27;
+  return category === "transport" ? 33 : 30;
 }
 
 function markerLabel(category: FacilityCategory) {

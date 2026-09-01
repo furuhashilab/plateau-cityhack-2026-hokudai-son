@@ -27,73 +27,69 @@ export function UrbanFunctionsControl({
   onBeginPlacement,
   onCancelPlacement
 }: Props) {
+  const activeSummary = summaries.find(s => s.category === focusedCategory) ?? null;
+  const placing = activeSummary ? placementCategory === activeSummary.category : false;
+  const hasProposal = activeSummary ? futureFacility?.category === activeSummary.category : false;
+  const proposed = activeSummary ? urbanFunctionSummaryWithProposal(activeSummary, futureFacility) : null;
+
   return (
-    <details className="panel facility-control urban-functions-panel">
+    <details className="panel urban-functions-panel">
       <summary className="section-summary">
         <span>街の施設を見る</span>
         <strong>{summaryHeadline(summaries)}</strong>
       </summary>
-      <div className="urban-functions-heading">
-        <button
-          type="button"
-          className="all-functions-button"
-          aria-pressed={focusedCategory === null}
-          onClick={() => onFocusChange(null)}
-        >
-          全部見る
-        </button>
-      </div>
-      <div className="urban-function-list">
+
+      {/* 2×2 compact chip grid */}
+      <div className="category-chips">
         {summaries.map((summary) => {
           const active = focusedCategory === summary.category;
           const dimmed = focusedCategory !== null && !active;
-          const proposed = urbanFunctionSummaryWithProposal(summary, futureFacility);
-          const hasProposal = futureFacility?.category === summary.category;
-          const placing = placementCategory === summary.category;
           return (
-            <div
+            <button
               key={summary.category}
-              className={`urban-function-card${active ? " active" : ""}${dimmed ? " dimmed" : ""}`}
-              style={{ "--function-color": summary.color } as CSSProperties}
+              type="button"
+              className={`category-chip${active ? " active" : ""}${dimmed ? " dimmed" : ""}`}
+              style={{ "--chip-color": summary.color } as CSSProperties}
+              onClick={() => onFocusChange(active ? null : summary.category)}
             >
-              <button
-                type="button"
-                className="function-focus-button"
-                onClick={() => onFocusChange(active ? null : summary.category)}
-              >
-                <span className="facility-symbol" style={{ background: summary.color }}>{summary.symbol}</span>
-                <span className="function-name">{childLabel(summary.category)}</span>
-                <span className="function-count total">{summary.totalCount}こ</span>
-                <span className={summary.affectedCount > 0 ? "function-count affected" : "function-count clear"}>
-                  {impactLabel(summary.affectedCount)}
-                </span>
-                <span className="function-count">{summary.unaffectedCount}こ だいじょうぶそう</span>
-              </button>
-              {hasProposal ? (
-                <div className="proposal-comparison">
-                  <span>今ある施設</span>
-                  <strong>{summary.totalCount}このうち {summary.unaffectedCount}こ だいじょうぶそう</strong>
-                  <span>未来に置いた施設</span>
-                  <strong>{futureFacilityStatus(futureFacility)}</strong>
-                  <span>未来案を足すと</span>
-                  <strong>{proposed.totalCount}このうち {proposed.unaffectedCount}こ だいじょうぶそう</strong>
-                </div>
-              ) : null}
-              <div className="future-action-row">
-                <button
-                  type="button"
-                  className="future-add-button"
-                  aria-pressed={placing}
-                  onClick={() => placing ? onCancelPlacement() : onBeginPlacement(summary.category)}
-                >
-                  {placing ? "やめる" : `未来の${childLabel(summary.category)}を置く`}
-                </button>
-                {placing ? <span>地図をクリック</span> : null}
-              </div>
-            </div>
+              <span className="chip-symbol" style={{ background: summary.color }}>{summary.symbol}</span>
+              <span className="chip-name">{childLabel(summary.category)}</span>
+              <span className="chip-total">{summary.totalCount}こ</span>
+              <span className={summary.affectedCount > 0 ? "chip-impact affected" : "chip-impact clear"}>
+                {summary.affectedCount > 0 ? `${summary.affectedCount}こ危` : "安全"}
+              </span>
+            </button>
           );
         })}
       </div>
+
+      {/* Detail drawer — only when a category is focused */}
+      {activeSummary ? (
+        <div className="active-category-detail">
+          {hasProposal && proposed ? (
+            <div className="proposal-comparison">
+              <span>今ある施設</span>
+              <strong>{activeSummary.totalCount}このうち {activeSummary.unaffectedCount}こ だいじょうぶそう</strong>
+              <span>未来に置いた施設</span>
+              <strong>{futureFacilityStatus(futureFacility)}</strong>
+              <span>未来案を足すと</span>
+              <strong>{proposed.totalCount}このうち {proposed.unaffectedCount}こ だいじょうぶそう</strong>
+            </div>
+          ) : null}
+          <div className="future-action-row">
+            <button
+              type="button"
+              className="future-add-button"
+              aria-pressed={placing}
+              onClick={() => placing ? onCancelPlacement() : onBeginPlacement(activeSummary.category)}
+            >
+              {placing ? "やめる" : `未来の${childLabel(activeSummary.category)}を置く`}
+            </button>
+            {placing ? <span>地図をクリック</span> : null}
+          </div>
+        </div>
+      ) : null}
+
       <div className="facility-toggles compact">
         {FACILITY_CATEGORIES.map((category) => (
           <label key={category.id}>
@@ -122,16 +118,12 @@ function childLabel(category: FacilityCategory) {
 }
 
 function affectedTotal(summaries: UrbanFunctionSummary[]) {
-  return summaries.reduce((sum, summary) => sum + summary.affectedCount, 0);
+  return summaries.reduce((sum, s) => sum + s.affectedCount, 0);
 }
 
 function summaryHeadline(summaries: UrbanFunctionSummary[]) {
   const affected = affectedTotal(summaries);
   return affected > 0 ? `${affected}こ 水の影響を受けるかも` : "水の影響は見つかっていません";
-}
-
-function impactLabel(affectedCount: number) {
-  return affectedCount > 0 ? `${affectedCount}こ 水の影響を受けるかも` : "水の影響は見つかっていません";
 }
 
 function futureFacilityStatus(futureFacility: FutureFacilityScenario | null) {
