@@ -39,7 +39,7 @@ export function UrbanFunctionsControl({
         <strong>{summaryHeadline(summaries)}</strong>
       </summary>
 
-      {/* 2×2 compact chip grid */}
+      {/* 2×2 compact chip grid — always visible when panel open */}
       <div className="category-chips">
         {summaries.map((summary) => {
           const active = focusedCategory === summary.category;
@@ -66,16 +66,27 @@ export function UrbanFunctionsControl({
       {/* Detail drawer — only when a category is focused */}
       {activeSummary ? (
         <div className="active-category-detail">
+          {/* Always show current state */}
+          <div className="current-state-row">
+            <span>今ある施設</span>
+            <strong>
+              {activeSummary.totalCount}こ /{" "}
+              {activeSummary.unaffectedCount}こ だいじょうぶそう
+            </strong>
+          </div>
+
+          {/* Future comparison — only when future facility is placed for this category */}
           {hasProposal && proposed ? (
             <div className="proposal-comparison">
-              <span>今ある施設</span>
-              <strong>{activeSummary.totalCount}このうち {activeSummary.unaffectedCount}こ だいじょうぶそう</strong>
               <span>未来に置いた施設</span>
               <strong>{futureFacilityStatus(futureFacility)}</strong>
               <span>未来案を足すと</span>
-              <strong>{proposed.totalCount}このうち {proposed.unaffectedCount}こ だいじょうぶそう</strong>
+              <strong>
+                {proposed.totalCount}このうち {proposed.unaffectedCount}こ だいじょうぶそう
+              </strong>
             </div>
           ) : null}
+
           <div className="future-action-row">
             <button
               type="button"
@@ -90,20 +101,23 @@ export function UrbanFunctionsControl({
         </div>
       ) : null}
 
-      <div className="facility-toggles compact">
-        {FACILITY_CATEGORIES.map((category) => (
-          <label key={category.id}>
-            <input
-              type="checkbox"
-              checked={visibility[category.id]}
-              onChange={(event) => onChange({ ...visibility, [category.id]: event.target.checked })}
-            />
-            <span className="facility-symbol" style={{ background: category.color }}>{category.symbol}</span>
-            <span>{childLabel(category.id)}</span>
-          </label>
-        ))}
-      </div>
-      <p className="facility-source-note">実在する施設データをもとに表示しています。</p>
+      {/* Visibility toggles — collapsed by default to keep panel compact */}
+      <details className="visibility-details">
+        <summary className="visibility-summary">表示する施設の種類</summary>
+        <div className="facility-toggles compact">
+          {FACILITY_CATEGORIES.map((category) => (
+            <label key={category.id}>
+              <input
+                type="checkbox"
+                checked={visibility[category.id]}
+                onChange={(event) => onChange({ ...visibility, [category.id]: event.target.checked })}
+              />
+              <span className="facility-symbol" style={{ background: category.color }}>{category.symbol}</span>
+              <span>{childLabel(category.id)}</span>
+            </label>
+          ))}
+        </div>
+      </details>
     </details>
   );
 }

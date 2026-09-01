@@ -100,6 +100,8 @@ body {
 .urban-functions-panel {
   width: min(300px, calc(100vw - 32px));
   padding: 0;
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
 }
 
 /* 2×2 chip grid */
@@ -183,6 +185,28 @@ body {
 .active-category-detail {
   padding: 8px 12px 10px;
   border-top: 1px solid rgba(226, 232, 240, 0.12);
+}
+
+.current-state-row {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 3px 8px;
+  margin-bottom: 4px;
+  color: #aebbc9;
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.current-state-row span {
+  color: #8fd3ff;
+  font-weight: 800;
+}
+
+.current-state-row strong {
+  min-width: 0;
+  color: #f8fafc;
+  font-size: 10px;
+  overflow-wrap: anywhere;
 }
 
 .proposal-comparison {
@@ -295,6 +319,44 @@ body {
   line-height: 1.4;
 }
 
+/* Visibility toggles inner disclosure — collapsed by default */
+.visibility-details {
+  margin: 0;
+  border-top: 1px solid rgba(226, 232, 240, 0.12);
+  font-size: 11px;
+  color: #cbd5e1;
+}
+
+.visibility-summary {
+  padding: 8px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #8fd3ff;
+  cursor: pointer;
+  list-style: none;
+}
+
+.visibility-summary::-webkit-details-marker {
+  display: none;
+}
+
+.visibility-summary::after {
+  content: " ▾";
+  font-size: 9px;
+  opacity: 0.7;
+}
+
+.visibility-details[open] .visibility-summary::after {
+  content: " ▴";
+}
+
+.visibility-details .facility-toggles.compact {
+  margin-top: 4px;
+  padding-top: 6px;
+  border-top: 0;
+  margin-bottom: 10px;
+}
+
 .plateau-badge {
   width: min(220px, calc(100vw - 32px));
   border: 1px solid rgba(143, 211, 255, 0.32);
@@ -383,22 +445,24 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
+  gap: 10px;
   cursor: pointer;
   list-style: none;
-  padding: 13px 14px;
+  padding: 11px 14px;
 }
 
 .section-summary span {
   color: #f8fafc;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 900;
 }
 
 .section-summary strong {
-  color: #aebbc9;
-  font-size: 11px;
+  color: #94a3b8;
+  font-size: 10px;
   font-weight: 750;
+  text-align: right;
+  flex-shrink: 0;
 }
 
 .placement-guide {
@@ -637,7 +701,7 @@ body {
 }
 
 .urban-functions-panel {
-  width: min(320px, calc(100vw - 32px));
+  width: min(300px, calc(100vw - 32px));
 }
 
 .data-badge h1 {

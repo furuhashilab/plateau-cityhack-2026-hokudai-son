@@ -16,6 +16,74 @@ Phase 2D — Child-friendly Map-first UI Refactor
 
 Make the current 3D Maizuru experience understandable to elementary school users by making the map dominant, moving technical details into disclosure controls, and using simple Japanese labels.
 
+## Phase 2D Post-UX Improvement Verification
+
+Status: PASS as of 2026-09-01.
+
+Purpose:
+
+- Complete and verify the uncommitted UX improvements after Phase 2D without discarding existing work.
+
+Implementation adjustments made during verification:
+
+- `src/cesium/facilityLayer.ts` keeps existing facilities as Cesium `BillboardCollection` pins rather than points, but now uses fixed-size local Canvas pin images instead of `PinBuilder`.
+- `src/cesium/futureFacilityLayer.ts` keeps the future facility as a distinct simple 3D box + ground ring + future pin/label, also using fixed-size local Canvas pin images.
+- `src/cesium/plateauLayer.ts` now patches Cesium `ContextLimits` from actual WebGL values for texture, renderbuffer, draw-buffer, color-attachment, and vertex-texture limits when Cesium has stale or too-small values. This fixed real Chrome `TextureAtlas` errors triggered by Billboard/Label rendering.
+
+Runtime verification:
+
+- Dev server used: `http://127.0.0.1:5174/`
+- Real Chrome remote debugging used on port `9224`.
+- Fresh reload after fixes produced no relevant console errors and no Vite/runtime overlay.
+- Existing facility layer verified as `BillboardCollection` with 18 pins and `LabelCollection` with 18 labels.
+- Medical focus verified:
+  - Medical pins: visible, alpha `1`, scale `1.15`, labels shown as `病院`.
+  - Non-focused categories: visible but dimmed with alpha `0.28`, labels hidden.
+- Affected existing facility styling verified visually: category-colored pin retained with an orange warning ring/dot.
+- Urban Function counts at tide `+2.0 m` verified from live dev hook:
+  - Medical `2/6` affected, `4/6` unaffected.
+  - Evacuation `4/8` affected, `4/8` unaffected.
+  - Transport `0/1` affected, `1/1` unaffected.
+  - Daily Life `1/3` affected, `2/3` unaffected.
+- Future Medical placement verified from `未来の病院を置く`:
+  - Placement guide appeared.
+  - Map click created `window.__PLATEAU_FUTURE_FACILITY__`.
+  - Future layer contained 2 billboards, 1 label, plus `future-facility-building` box and `future-facility-ring` ellipse entities.
+  - Future object was visually distinct from existing facility pins.
+  - Future object click selected the Future Facility panel after deselecting.
+  - Inundation method change updated future impact method from `sea-connected` to `elevation-only`.
+  - Remove cleared the future facility and panel.
+  - Re-placement after Remove created a new future facility.
+- Urban Functions compact UI verified:
+  - Category chip grid remained compact.
+  - Future comparison was hidden before placement and shown only for the matching category after placement.
+  - `表示する施設の種類` details was collapsed by default and expanded naturally with all four toggles.
+- Regression checks:
+  - PLATEAU building tiles visible and pickable.
+  - Inundation overlay visible and tide-slider reactive.
+  - Facility picking verified with an existing facility panel.
+  - Building picking verified with a PLATEAU building panel.
+  - Road picking verified with OSM tertiary road panel via road fallback.
+  - Future picking verified.
+  - Category focus verified.
+- Runtime observed: road stats `48` road features / `1,400` samples, last road update about `0.3 ms`, JS heap about `165 MB`.
+- Screenshots:
+  - `/tmp/plateau-ux-pass-med-focus.png`
+  - `/tmp/plateau-ux-pass-future-placed.png`
+  - `/tmp/plateau-ux-existing-pins-close.png`
+  - `/tmp/plateau-ux-final-state.png`
+
+Static verification:
+
+- `git diff --check`: PASS
+- `npm run typecheck`: PASS
+- `npm run build`: PASS
+
+Known limitations:
+
+- Road picking still depends on the existing fallback when ground polylines are not directly returned by `drillPick`.
+- Some app state can remain open/tall after expanding multiple details panels; acceptable for this pass, but still a candidate for later bottom-sheet polish.
+
 ## Phase 2D Status
 
 Status: PASS as of 2026-09-01.

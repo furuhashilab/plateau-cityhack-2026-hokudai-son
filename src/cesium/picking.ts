@@ -20,7 +20,7 @@ import { WEST_MAIZURU_ROAD_PROOF } from "../data/roads";
 import type { RoadSelection } from "../types/road";
 import { computeFacilityScenarioImpact } from "../data/urbanFunctions";
 import type { FacilityCategory } from "../types/facility";
-import { isFutureFacilityPickId } from "./futureFacilityLayer";
+import { isFutureFacilityPickId, FUTURE_FACILITY_ENTITY_IDS } from "./futureFacilityLayer";
 import type { FutureFacilityScenario } from "../types/futureFacility";
 
 type MutableFeature = Cesium3DTileFeature & {
@@ -75,9 +75,16 @@ export function attachBuildingPicking(
     }
 
     const pickedObjects = viewer.scene.drillPick(click.position, 8);
-    const futurePick = pickedObjects.find((candidate) =>
-      isFutureFacilityPickId((candidate as { id?: unknown }).id)
-    );
+    const futurePick = pickedObjects.find((candidate) => {
+      const id = (candidate as { id?: unknown }).id;
+      if (isFutureFacilityPickId(id)) return true;
+      // Entity picks: id is the Entity object; check its string id
+      if (id && typeof id === "object") {
+        const entityId = (id as { id?: string }).id;
+        return typeof entityId === "string" && (FUTURE_FACILITY_ENTITY_IDS as readonly string[]).includes(entityId);
+      }
+      return false;
+    });
     const facilityPick = pickedObjects.find((candidate) =>
       isFacilityPickId((candidate as { id?: unknown }).id)
     );
@@ -85,7 +92,15 @@ export function attachBuildingPicking(
     const roadPick = pickedObjects.find((candidate) => roadPickIdFromPickedObject(candidate));
     const picked = futurePick ?? facilityPick ?? buildingPick ?? roadPick ?? pickedObjects[0] ?? viewer.scene.pick(click.position);
     const pickedId = (picked as { id?: unknown } | undefined)?.id;
-    if (isFutureFacilityPickId(pickedId)) {
+    const isFuturePick = (() => {
+      if (isFutureFacilityPickId(pickedId)) return true;
+      if (pickedId && typeof pickedId === "object") {
+        const entityId = (pickedId as { id?: string }).id;
+        return typeof entityId === "string" && (FUTURE_FACILITY_ENTITY_IDS as readonly string[]).includes(entityId);
+      }
+      return false;
+    })();
+    if (isFuturePick) {
       clearHighlight();
       onBuildingSelect(null);
       onFacilitySelect(null);
@@ -239,9 +254,13 @@ export function attachBuildingPicking(
 
 function cartographicFromClick(viewer: Viewer, position: Cartesian2) {
   const ray = viewer.camera.getPickRay(position);
-  const cartesian = viewer.scene.pickPosition(position)
-    ?? (ray ? viewer.scene.globe.pick(ray, viewer.scene) : undefined)
-    ?? viewer.camera.pickEllipsoid(position, viewer.scene.globe.ellipsoid);
+  // globe.pick: CPU-side ray–terrain intersection, works without depthTestAgainstTerrain.
+  // pickEllipsoid: always hits the WGS84 surface, safe fallback.
+  // pickPosition: GPU depth buffer read, accurate for 3D tile buildings but unreliable
+  //   on bare terrain when depthTestAgainstTerrain=false.
+  const cartesian = (ray ? viewer.scene.globe.pick(ray, viewer.scene) : undefined)
+    ?? viewer.camera.pickEllipsoid(position, viewer.scene.globe.ellipsoid)
+    ?? viewer.scene.pickPosition(position);
   return cartesian ? Cartographic.fromCartesian(cartesian) : null;
 }
 
