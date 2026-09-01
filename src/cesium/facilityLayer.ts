@@ -11,12 +11,17 @@ import {
   VerticalOrigin
 } from "cesium";
 import { FACILITY_CATEGORIES } from "../data/facilities";
-import type { Facility, FacilityCategoryVisibility } from "../types/facility";
+import type { Facility, FacilityCategory, FacilityCategoryVisibility } from "../types/facility";
 
 export type FacilityPickId = { kind: "facility"; facilityId: string };
 
 export type FacilityLayer = {
   setVisibility: (visibility: FacilityCategoryVisibility) => void;
+  setDisplay: (display: {
+    visibility: FacilityCategoryVisibility;
+    focusedCategory: FacilityCategory | null;
+    affectedFacilityIds: Set<string>;
+  }) => void;
   destroy: () => void;
 };
 
@@ -62,15 +67,38 @@ export function createFacilityLayer(viewer: Viewer, facilities: Facility[]): Fac
     return { facility, point, label };
   });
 
+  const setDisplay: FacilityLayer["setDisplay"] = ({ visibility, focusedCategory, affectedFacilityIds }) => {
+    for (const item of items) {
+      const visible = visibility[item.facility.category];
+      item.point.show = visible;
+      item.label.show = visible;
+      if (!visible) continue;
+
+      const category = FACILITY_CATEGORIES.find((candidate) => candidate.id === item.facility.category)!;
+      const focused = focusedCategory === null || focusedCategory === item.facility.category;
+      const affected = affectedFacilityIds.has(item.facility.id);
+      const baseColor = affected ? Color.fromCssColorString("#fb923c") : Color.fromCssColorString(category.color);
+      const alpha = focused ? 1 : 0.34;
+
+      item.point.color = baseColor.withAlpha(alpha);
+      item.point.outlineColor = affected
+        ? Color.fromCssColorString("#7c2d12").withAlpha(focused ? 1 : 0.5)
+        : Color.fromCssColorString("#08111d").withAlpha(focused ? 1 : 0.5);
+      item.point.outlineWidth = affected ? 5 : 3;
+      item.point.pixelSize = (item.facility.category === "transport" ? 22 : 18) + (affected ? 4 : 0);
+      item.label.fillColor = focused ? Color.WHITE : Color.WHITE.withAlpha(0.72);
+      item.label.backgroundColor = (affected
+        ? Color.fromCssColorString("#7c2d12")
+        : Color.fromCssColorString("#08111d")).withAlpha(focused ? 0.82 : 0.34);
+    }
+    viewer.scene.requestRender();
+  };
+
   return {
     setVisibility(visibility) {
-      for (const item of items) {
-        const visible = visibility[item.facility.category];
-        item.point.show = visible;
-        item.label.show = visible;
-      }
-      viewer.scene.requestRender();
+      setDisplay({ visibility, focusedCategory: null, affectedFacilityIds: new Set() });
     },
+    setDisplay,
     destroy() {
       viewer.scene.primitives.remove(points);
       viewer.scene.primitives.remove(labels);

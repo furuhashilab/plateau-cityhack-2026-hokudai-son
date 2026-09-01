@@ -2,7 +2,7 @@
 
 ## Last Updated
 
-2026-08-30
+2026-09-01
 
 ## Updated By
 
@@ -10,11 +10,313 @@ Codex (GPT-5)
 
 ## Current Phase
 
-Phase 2B — Road Impact / Traffic Regulation Potential Research PASS
+Phase 2C.1 — Urban Function Experience MVP RESTORED
 
 ## Current Goal
 
-Research and design how to acquire Maizuru road data, integrate it with the existing DEM/tide/inundation logic, and evaluate traffic-management candidates without implementing the road layer yet.
+Restore the Phase 2B.1 + Phase 2C.1 integration after commit separation left Urban Function wiring partially disconnected.
+
+## Latest Restoration Status
+
+Status: PASS as of 2026-09-01.
+
+The current worktree keeps the Phase 2B.1 road implementation and restores the missing Phase 2C.1 Urban Function integration without reset/restore/clean/stash/commit/push.
+
+Restored connections:
+
+- `src/app/App.tsx` now owns Urban Function impact state and focused facility category state.
+- `UrbanFunctionsControl` receives `summaries`, `focusedCategory`, and `onFocusChange`.
+- `src/components/CesiumViewport.tsx` computes and publishes `computeUrbanFunctionImpactState()` from current DEM, sea-connectivity, tide, and inundation method.
+- `src/cesium/facilityLayer.ts` supports `setDisplay({ visibility, focusedCategory, affectedFacilityIds })`.
+- Facility markers de-emphasize unfocused categories and use stronger styling for potentially affected facilities.
+- Dev hook `window.__PLATEAU_URBAN_FUNCTION_SUMMARIES__` is restored.
+- Facility picking uses shared `computeFacilityScenarioImpact()` for facility impact values.
+
+Verification after restoration:
+
+- `npm run typecheck`: PASS
+- `npm run build`: PASS
+- Runtime URL used: `http://127.0.0.1:5174/`
+- Chrome remote debugging used on port `9224`.
+- Runtime Ready observed with PLATEAU `125 loaded / 0 pending`, FPS `60`, JS heap about `158 MB`.
+- Urban Function panel displayed Medical, Evacuation, Transport, Daily Life.
+- Runtime summaries reacted to tide `0`, `1`, `1.5`, `2 m` in both Elevation-only and Sea-connected modes.
+- Focus verified for Medical, Evacuation, Transport, Daily Life; All mode cleared focus.
+- Road stats hook reported `48` road features and `1,400` samples.
+- ContextLimits hook reported actual `MAX_VERTEX_TEXTURE_IMAGE_UNITS = 16`, Cesium before `0`, after `16`, patched `true`.
+- Facility picking verified with `あいおい橋四方クリニック`.
+- Building picking verified with a PLATEAU building identifier panel.
+- Road picking verified with Road panel opening for an OSM tertiary road.
+
+Runtime notes:
+
+- Reload still reports non-fatal Cesium `DeveloperError` promise exceptions from Cesium internals; app remains Ready.
+- Chrome process also emitted local updater/keychain/crashpad noise unrelated to app behavior.
+
+Current classification:
+
+- Phase 2B.1: retained and functioning.
+- Phase 2C.1: restored and functioning.
+
+## Phase 2C.1 Status
+
+Status: PASS as of 2026-08-31.
+
+The current worktree is authoritative. Do not reset, clean, rebuild Phase 2B.1, or commit Phase 2C.1 before user review.
+
+Urban Function summary model:
+
+- `src/data/urbanFunctions.ts` defines `UrbanFunctionSummary` and `UrbanFunctionImpactState`.
+- Summaries are derived from the existing 18 real facilities, current tide level, current inundation method, DEM ground elevation, and sea-connectivity thresholds.
+- No arbitrary resilience score, weighting model, closure status, or accessibility claim is introduced.
+- Per category, the UI reports total facilities, potentially affected facilities, currently unaffected facilities, and affected ratio.
+
+Facility impact calculation reuse:
+
+- `computeFacilityScenarioImpact()` is the shared facility scenario helper.
+- Facility picking and Urban Function summaries both use the same helper.
+- Flood semantics remain the existing facility/inundation semantics:
+  - Elevation-only: depth from `inundationDepth(tide, groundElevation)`.
+  - Sea-connected: depth is 0 when the sampled sea-connectivity threshold is not reached.
+  - Potentially affected means `depthMeters > 0`.
+- The PLATEAU visual `heightOffsetMeters: -36` is not used for facility/urban-function calculations.
+
+UI / focus behavior:
+
+- `src/components/UrbanFunctionsControl.tsx` is now a compact Urban Functions panel.
+- It shows Medical, Evacuation, Transport, and Daily Life cards with actual counts.
+- Clicking a category sets a separate focus state rather than changing the four visibility toggles.
+- The existing facility category checkboxes remain available as visibility controls.
+- The `All` button clears focus in one action.
+- Focused facilities remain prominent; unfocused visible categories are de-emphasized; potentially affected facilities use stronger orange styling.
+- Labels use "potentially affected", not destroyed/closed/unavailable.
+
+Cesium integration:
+
+- `src/cesium/facilityLayer.ts` now supports `setDisplay({ visibility, focusedCategory, affectedFacilityIds })`.
+- `src/components/CesiumViewport.tsx` computes Urban Function summaries whenever tide, method, DEM/connectivity, visibility, or focus changes require a display refresh.
+- Dev-only summary hook: `window.__PLATEAU_URBAN_FUNCTION_SUMMARIES__`.
+- Road impact remains visible and functional as visual context; no road-network accessibility analysis is claimed.
+- Verified Facility ↔ PLATEAU building highlighting is retained for verified links only.
+
+Runtime verification:
+
+- Dev server used: `http://127.0.0.1:5174/`
+- Browser: Chrome remote debugging on port `9224`.
+- All Urban Functions mode verified.
+- Category focus verified for Medical, Evacuation, Transport, and Daily Life.
+- All mode / clear focus verified.
+- Facility picking verified with `あいおい橋四方クリニック`; inspector showed PLATEAU link `Verified`.
+- Building picking verified; Selected Building panel opened with PLATEAU identifier.
+- Road picking verified at CSS coordinate approximately `(500, 610)`; Road panel opened with road class/source/tide/method/length/traffic-regulation fields.
+- Road layer remained present with `48` road features and `1,400` samples.
+
+Tide / method verification:
+
+- Elevation-only:
+  - `0.0 m`: Medical `0/6`, Evacuation `0/8`, Transport `0/1`, Daily Life `0/3`
+  - `1.0 m`: Medical `2/6`, Evacuation `0/8`, Transport `0/1`, Daily Life `0/3`
+  - `1.5 m`: Medical `2/6`, Evacuation `2/8`, Transport `0/1`, Daily Life `0/3`
+  - `2.0 m`: Medical `2/6`, Evacuation `4/8`, Transport `0/1`, Daily Life `1/3`
+- Sea-connected:
+  - `0.0 m`: Medical `0/6`, Evacuation `0/8`, Transport `0/1`, Daily Life `0/3`
+  - `1.0 m`: Medical `2/6`, Evacuation `0/8`, Transport `0/1`, Daily Life `0/3`
+  - `1.5 m`: Medical `2/6`, Evacuation `2/8`, Transport `0/1`, Daily Life `0/3`
+  - `2.0 m`: Medical `2/6`, Evacuation `4/8`, Transport `0/1`, Daily Life `1/3`
+
+Performance / runtime:
+
+- Runtime Ready status after Phase 2C.1 verification: PLATEAU `125 loaded / 0 pending`, FPS `59-60`, JS heap typically about `139-162 MB` after interaction; one immediate reload sample briefly reported `298 MB` before settling.
+- Road preprocessing remained about `0.9-1.4 ms`.
+- Road tide/style updates remained about `0.5 ms`.
+- Urban Function summary computation is trivial for 18 facilities and adds no measurable Cesium processing cost.
+
+Regression verification:
+
+- PLATEAU buildings visible.
+- DEM / Ground Elevation control remained available.
+- Inundation layer remained visible and tide/method reactive.
+- Facility category toggles remained interactive.
+- Facility inspector remained usable.
+- Verified building highlight behavior remained tied to verified facility links.
+- Building inspector remained usable.
+- Road layer remained visible/functioning; road picking and road inspector remained usable.
+- Tide slider and Elevation-only / Sea-connected switch updated Urban Function counts and road impact without DEM resampling or road geometry rebuild.
+
+Console notes:
+
+- No catastrophic render error was present; app status remained Ready.
+- Chrome console still reports non-fatal Cesium `DeveloperError` exceptions from `BillboardTexture`/texture-atlas async handling during dev reload, plus a favicon `404`.
+- These do not block Phase 2C.1 behavior and appear separate from the Urban Function summary/focus logic; keep classified as known Cesium dev-runtime noise unless they become user-visible or fatal.
+
+Known limitations:
+
+- Unknown facility DEM/connectivity samples would currently count as not affected because no positive depth can be calculated.
+- Urban Function focus is categorical visual exploration, not service-area or network accessibility analysis.
+- Road impact remains a small AOI screening layer, not full West Maizuru and not an official traffic-regulation model.
+- No facility placement, future city editing, network lines, routing, resilience score, census aggregation, or backflow layer is implemented in Phase 2C.1.
+
+Changed files in Phase 2C.1 worktree:
+
+- `src/data/urbanFunctions.ts`
+- `src/components/UrbanFunctionsControl.tsx`
+- `src/cesium/facilityLayer.ts`
+- `src/cesium/picking.ts`
+- `src/components/CesiumViewport.tsx`
+- `src/app/App.tsx`
+- `src/styles.css`
+- `docs/AI_HANDOFF.md`
+
+Static verification:
+
+- `npm run typecheck`: PASS
+- `npm run build`: PASS
+
+Recommended next action:
+
+- User review of the Urban Function panel and demo flow.
+- Next product phase should continue toward interactive city/urban-function experience, not further road-only expansion.
+
+Previous Phase 2B.1 status retained below for context.
+
+## Phase 2B.1 Status
+
+Status: PASS as of 2026-08-31.
+
+The current worktree is authoritative. Do not reset, clean, or rebuild the Phase 2B.1 implementation from scratch.
+
+Road source:
+
+- Static runtime data: `src/data/roads/westMaizuruRoadProof.json`
+- Source: OpenStreetMap, attribution `OpenStreetMap contributors`, ODbL 1.0
+- Retrieval date: 2026-08-30
+- Runtime does not query Overpass or OpenStreetMap.
+
+AOI:
+
+- South `35.4430`
+- West `135.3260`
+- North `35.4518`
+- East `135.3378`
+- Small West Maizuru station / Isazu lowland proof AOI only.
+
+Dataset retained:
+
+- Road features: `48`
+- Samples: `1,400`
+- Invalid samples: `10`
+- Total road length: `6,630.2 m`
+- Classes: `primary: 7`, `tertiary: 20`, `unclassified: 21`
+- Sampling: approximately 5 m fixed interval along clipped OSM LineStrings, endpoints included.
+
+Domain architecture:
+
+- `src/types/road.ts` defines `RoadDataset`, `RoadFeature`, `RoadSample`, `RoadImpactMetrics`, and `RoadSelection`.
+- `src/data/roads.ts` loads the static JSON and computes metrics from precomputed samples.
+- Road flood logic is shared with the existing inundation model:
+  - Elevation-only: `groundElevation < tide`
+  - Sea-connected: `groundElevation < tide && seaConnectionThreshold <= tide`
+  - Depth: `max(0, tide - groundElevation)`
+- PLATEAU visual `heightOffsetMeters: -36` is not used in road/DEM calculations.
+
+Impact metric implementation:
+
+- `computeRoadImpactMetrics()` calculates valid sample count, affected sample count, minimum ground elevation, maximum/mean potential depth, affected length, and affected ratio.
+- `affectedLengthMeters` uses interval-based accumulation: full interval when both adjacent valid samples are affected, half interval when exactly one endpoint is affected, skip invalid intervals.
+
+Cesium road rendering:
+
+- Final architecture: one `GroundPolylinePrimitive` added to `viewer.scene.groundPrimitives`, with one `GeometryInstance` per road and `PolylineColorAppearance` for per-instance color.
+- `PolylineCollection` was abandoned because this environment reported `Vertex texture fetch support is required to render polylines`.
+- Initial `GroundPolylinePrimitive + PerInstanceColorAppearance` also failed after the vertex-texture patch with `TypeError: Cannot read properties of undefined (reading '_uniforms')`; Cesium expects `PolylineColorAppearance` for GroundPolylinePrimitive per-instance colors.
+- Initial colors are baked into `GeometryInstance` attributes because `getGeometryInstanceAttributes()` cannot be called before the primitive first updates.
+- Later tide/method changes update per-instance color attributes only. Geometry, DEM sampling, and connectivity are not rebuilt.
+
+ContextLimits investigation:
+
+- Actual Chrome/WebGL `MAX_VERTEX_TEXTURE_IMAGE_UNITS`: `16`
+- Cesium `ContextLimits.maximumVertexTextureImageUnits` before compatibility patch: `0`
+- Patched value: `16`
+- Patch location: `src/cesium/plateauLayer.ts`, extending the existing `applyContextLimitMinimums()` compatibility workaround.
+- Patch rule: only applies when Cesium reports `<= 0` and the actual WebGL value read from the viewer's GL context is a positive number. It does not spoof support when real WebGL reports 0.
+- Runtime debug report in dev: `window.__PLATEAU_CONTEXT_LIMITS__`.
+
+Picking and inspector:
+
+- Picking priority remains: facility, building, road, empty.
+- Road picking supports Cesium primitive pick id plus screen-space nearest-line fallback plus geodetic nearest-line fallback from click position.
+- Verified road click at CSS coordinate approximately `(417, 649)` opened Road Inspector.
+- Verified facility click for `あいおい橋四方クリニック` still opened Facility Inspector with PLATEAU link `Verified`.
+- Verified building click still opened Selected Building panel with a PLATEAU `Identifier`.
+- Road Inspector fields verified: Name, Road class, Source, Scenario tide, Method, Minimum elevation, Maximum potential depth, Affected length, Total length, Affected ratio, Traffic regulation `Not automatically determined`.
+
+Tide / method verification:
+
+- Selected road: `unclassified`, total length `128 m`, minimum elevation `0.9 m`.
+- Elevation-only:
+  - `0.0 m`: depth `0.0 m`, affected length `0 m`, ratio `0%`
+  - `1.0 m`: depth `0.1 m`, affected length `45 m`, ratio `35%`
+  - `1.5 m`: depth `0.6 m`, affected length `128 m`, ratio `100%`
+  - `2.0 m`: depth `1.1 m`, affected length `128 m`, ratio `100%`
+- Sea-connected:
+  - `0.0 m`: depth `0.0 m`, affected length `0 m`, ratio `0%`
+  - `1.0 m`: depth `0.0 m`, affected length `0 m`, ratio `0%`
+  - `1.5 m`: depth `0.6 m`, affected length `128 m`, ratio `100%`
+  - `2.0 m`: depth `1.1 m`, affected length `128 m`, ratio `100%`
+
+Performance / runtime:
+
+- Dev server used: `http://127.0.0.1:5174/`
+- Runtime final Ready status: initial load `0.91 s`, interactive `0.91 s`, PLATEAU `139 loaded / 0 pending`, FPS `60`, JS heap about `156-157 MB`.
+- Road layer preprocessing time: about `1.1 ms`.
+- Tide/method road style update time: about `0.3-0.6 ms`.
+- Road stats dev hook: `window.__PLATEAU_ROAD_STATS__`.
+
+Regression verification:
+
+- PLATEAU buildings visible.
+- DEM data loaded; Ground Elevation control enabled and toggle state restored after testing.
+- Inundation layer visible and responds to tide/method controls.
+- Facilities visible; category toggles remain interactive.
+- Facility inspector, building inspector, road inspector, tide slider, and Elevation-only / Sea-connected switch verified.
+- No catastrophic Cesium road rendering error after final renderer.
+- Known pre-existing Cesium/WebGL framebuffer/texture-atlas warnings from prior phases remain classified as existing technical debt if they appear; no new Phase 2B.1 fatal render error was present in final runtime state.
+
+Known limitations:
+
+- Road data is a small OSM proof subset, not full West Maizuru.
+- OSM centerlines are not official municipal road-regulation segments.
+- No traffic regulation threshold, closure rule, slow-driving rule, danger label, or automatic regulatory decision is encoded.
+- DEM sampling uses nearest DEM cell and sea-connectivity terrain screening; this is not hydraulic/drainage/backflow simulation.
+- Dev-only runtime hooks expose `__PLATEAU_CONTEXT_LIMITS__`, `__PLATEAU_ROAD_STATS__`, and `__PLATEAU_VIEWER__` for verification.
+
+Changed files in Phase 2B.1 worktree:
+
+- `src/types/road.ts`
+- `src/data/roads.ts`
+- `src/data/roads/westMaizuruRoadProof.json`
+- `src/components/SelectedRoadPanel.tsx`
+- `src/cesium/roadLayer.ts`
+- `src/cesium/picking.ts`
+- `src/cesium/plateauLayer.ts`
+- `src/components/CesiumViewport.tsx`
+- `src/app/App.tsx`
+- `src/styles.css`
+- `scripts/build-road-proof-data.mjs`
+- `docs/ROAD_DATA_MANIFEST.md`
+- `docs/AI_HANDOFF.md`
+
+Static verification:
+
+- `npm run typecheck`: PASS
+- `npm run build`: PASS
+
+Recommended next action:
+
+- Stop extending road-only functionality for now unless a demo-critical bug appears.
+- Return to the product direction: Urban Function UI / interactive city experience that connects storm surge, buildings/facilities, roads/access, weakened urban functions, and future facility placement.
+
+Previous Phase 2B research status retained below for context.
 
 ## Phase 2B Research Status
 

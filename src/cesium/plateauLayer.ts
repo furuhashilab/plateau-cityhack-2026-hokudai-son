@@ -21,7 +21,6 @@ export async function loadPlateauBuildings(
   dataset: PlateauTilesetDataset,
   callbacks: PlateauLoadCallbacks
 ) {
-  applyContextLimitMinimums();
 
   const tileset = await Cesium3DTileset.fromUrl(dataset.tilesetUrl, {
     maximumScreenSpaceError: 24,
@@ -75,11 +74,23 @@ function applyTilesetHeightOffset(tileset: Cesium3DTileset, heightOffsetMeters =
   tileset.modelMatrix = Matrix4.fromTranslation(translation);
 }
 
-function applyContextLimitMinimums() {
+type WebGLContextLike = Pick<WebGLRenderingContext, "getParameter"> & {
+  MAX_VERTEX_TEXTURE_IMAGE_UNITS: number;
+};
+
+export type ContextLimitMinimumsReport = {
+  actualMaximumVertexTextureImageUnits: number | null;
+  cesiumMaximumVertexTextureImageUnitsBefore: number;
+  cesiumMaximumVertexTextureImageUnitsAfter: number;
+  patchedMaximumVertexTextureImageUnits: boolean;
+};
+
+export function applyContextLimitMinimums(gl?: WebGLContextLike): ContextLimitMinimumsReport {
   const mutableContextLimits = ContextLimits as unknown as {
     maximumCubeMapSize: number;
     maximumTextureSize: number;
     maximumRenderbufferSize: number;
+    maximumVertexTextureImageUnits: number;
     minimumAliasedLineWidth: number;
     maximumAliasedLineWidth: number;
     minimumAliasedPointSize: number;
@@ -87,11 +98,15 @@ function applyContextLimitMinimums() {
     _maximumCubeMapSize: number;
     _maximumTextureSize: number;
     _maximumRenderbufferSize: number;
+    _maximumVertexTextureImageUnits: number;
     _minimumAliasedLineWidth: number;
     _maximumAliasedLineWidth: number;
     _minimumAliasedPointSize: number;
     _maximumAliasedPointSize: number;
   };
+  const cesiumMaximumVertexTextureImageUnitsBefore = mutableContextLimits.maximumVertexTextureImageUnits;
+  let actualMaximumVertexTextureImageUnits: number | null = null;
+  let patchedMaximumVertexTextureImageUnits = false;
 
   // Some remote/headless Chrome sessions report zero WebGL limits before Cesium initializes models.
   // Cesium later uses these values to size line render states and feature textures.
@@ -105,6 +120,13 @@ function applyContextLimitMinimums() {
   }
   if (mutableContextLimits.maximumRenderbufferSize <= 0) {
     mutableContextLimits._maximumRenderbufferSize = 16;
+  }
+  if (mutableContextLimits.maximumVertexTextureImageUnits <= 0 && gl) {
+    actualMaximumVertexTextureImageUnits = gl.getParameter(gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS);
+    if (typeof actualMaximumVertexTextureImageUnits === "number" && actualMaximumVertexTextureImageUnits > 0) {
+      mutableContextLimits._maximumVertexTextureImageUnits = actualMaximumVertexTextureImageUnits;
+      patchedMaximumVertexTextureImageUnits = true;
+    }
   }
   if (
     mutableContextLimits.minimumAliasedLineWidth <= 0 ||
@@ -120,4 +142,11 @@ function applyContextLimitMinimums() {
     mutableContextLimits._minimumAliasedPointSize = 1;
     mutableContextLimits._maximumAliasedPointSize = 1;
   }
+
+  return {
+    actualMaximumVertexTextureImageUnits,
+    cesiumMaximumVertexTextureImageUnitsBefore,
+    cesiumMaximumVertexTextureImageUnitsAfter: mutableContextLimits.maximumVertexTextureImageUnits,
+    patchedMaximumVertexTextureImageUnits
+  };
 }

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { CesiumViewport } from "../components/CesiumViewport";
 import { DataBadge } from "../components/DataBadge";
 import { SelectedBuildingPanel } from "../components/SelectedBuildingPanel";
@@ -8,10 +8,18 @@ import { InundationControl } from "../components/InundationControl";
 import { DEFAULT_INUNDATION_METHOD, TIDE_LEVEL, type InundationMethod } from "../data/inundation";
 import { MAIZURU_PLATEAU_BUILDINGS } from "../data/maizuruPlateau";
 import type { BuildingSelection, ViewerStatus } from "../types/plateau";
-import { DEFAULT_FACILITY_VISIBILITY } from "../data/facilities";
-import type { FacilitySelection } from "../types/facility";
+import { DEFAULT_FACILITY_VISIBILITY, WEST_MAIZURU_FACILITIES } from "../data/facilities";
+import type { FacilityCategory, FacilitySelection } from "../types/facility";
 import { UrbanFunctionsControl } from "../components/UrbanFunctionsControl";
 import { SelectedFacilityPanel } from "../components/SelectedFacilityPanel";
+import { SelectedRoadPanel } from "../components/SelectedRoadPanel";
+import { computeRoadImpactMetrics } from "../data/roads";
+import type { RoadSelection } from "../types/road";
+import type { RoadLayerStats } from "../cesium/roadLayer";
+import {
+  computeUrbanFunctionImpactState,
+  type UrbanFunctionImpactState
+} from "../data/urbanFunctions";
 
 export function App() {
   const [status, setStatus] = useState<ViewerStatus>({
@@ -27,7 +35,13 @@ export function App() {
   });
   const [selectedBuilding, setSelectedBuilding] = useState<BuildingSelection | null>(null);
   const [selectedFacility, setSelectedFacility] = useState<FacilitySelection | null>(null);
+  const [selectedRoad, setSelectedRoad] = useState<RoadSelection | null>(null);
+  const [, setRoadStats] = useState<RoadLayerStats | null>(null);
   const [facilityVisibility, setFacilityVisibility] = useState(DEFAULT_FACILITY_VISIBILITY);
+  const [focusedFacilityCategory, setFocusedFacilityCategory] = useState<FacilityCategory | null>(null);
+  const [urbanFunctionImpact, setUrbanFunctionImpact] = useState<UrbanFunctionImpactState>(
+    computeUrbanFunctionImpactState(WEST_MAIZURU_FACILITIES, null, null, TIDE_LEVEL.initialMeters, DEFAULT_INUNDATION_METHOD)
+  );
   const [groundElevationVisible, setGroundElevationVisible] = useState(false);
   const [inundationVisible, setInundationVisible] = useState(true);
   const [tideLevelMeters, setTideLevelMeters] = useState<number>(TIDE_LEVEL.initialMeters);
@@ -36,15 +50,40 @@ export function App() {
     loading: true,
     error: null
   });
+  const handleBuildingSelect = useCallback((selection: BuildingSelection | null) => {
+    setSelectedBuilding(selection);
+    if (selection) {
+      setSelectedFacility(null);
+      setSelectedRoad(null);
+    }
+  }, []);
+  const handleFacilitySelect = useCallback((selection: FacilitySelection | null) => {
+    setSelectedFacility(selection);
+    if (selection) {
+      setSelectedBuilding(null);
+      setSelectedRoad(null);
+    }
+  }, []);
+  const handleRoadSelect = useCallback((selection: RoadSelection | null) => {
+    setSelectedRoad(selection);
+    if (selection) {
+      setSelectedBuilding(null);
+      setSelectedFacility(null);
+    }
+  }, []);
 
   return (
     <main className="app-shell">
       <CesiumViewport
         dataset={MAIZURU_PLATEAU_BUILDINGS}
         onStatusChange={setStatus}
-        onBuildingSelect={setSelectedBuilding}
-        onFacilitySelect={setSelectedFacility}
+        onBuildingSelect={handleBuildingSelect}
+        onFacilitySelect={handleFacilitySelect}
+        onRoadSelect={handleRoadSelect}
+        onRoadStatsChange={setRoadStats}
+        onUrbanFunctionImpactChange={setUrbanFunctionImpact}
         facilityVisibility={facilityVisibility}
+        focusedFacilityCategory={focusedFacilityCategory}
         groundElevationVisible={groundElevationVisible}
         inundationVisible={inundationVisible}
         tideLevelMeters={tideLevelMeters}
@@ -54,14 +93,24 @@ export function App() {
       <section className="overlay top-left" aria-label="PLATEAU data source">
         <div className="top-left-stack">
           <DataBadge dataset={MAIZURU_PLATEAU_BUILDINGS} />
-          <UrbanFunctionsControl visibility={facilityVisibility} onChange={setFacilityVisibility} />
+          <UrbanFunctionsControl
+            visibility={facilityVisibility}
+            summaries={urbanFunctionImpact.summaries}
+            focusedCategory={focusedFacilityCategory}
+            onChange={setFacilityVisibility}
+            onFocusChange={setFocusedFacilityCategory}
+          />
         </div>
       </section>
       <section className="overlay top-right" aria-label="Viewer status">
         <StatusOverlay status={status} />
       </section>
-      <section className="overlay bottom-left" aria-label="Selected building">
-        {selectedFacility ? <SelectedFacilityPanel selection={selectedFacility} /> : <SelectedBuildingPanel selection={selectedBuilding} />}
+      <section className="overlay bottom-left" aria-label="Selected feature">
+        {selectedFacility
+          ? <SelectedFacilityPanel selection={selectedFacility} />
+          : selectedRoad
+            ? <SelectedRoadPanel selection={selectedRoad} />
+            : <SelectedBuildingPanel selection={selectedBuilding} />}
       </section>
       <section className="overlay bottom-right layer-controls" aria-label="Elevation and inundation controls">
         <GroundElevationControl
@@ -85,6 +134,7 @@ export function App() {
               method
             ) : null);
             setSelectedFacility((selection) => selection ? updateFacilityInundation(selection, tideLevelMeters, method) : null);
+            setSelectedRoad((selection) => selection ? updateRoadInundation(selection, tideLevelMeters, method) : null);
           }}
           onTideLevelChange={(meters) => {
             setTideLevelMeters(meters);
@@ -92,11 +142,23 @@ export function App() {
               ? updateSelectionInundation(selection, meters, inundationMethod)
               : null);
             setSelectedFacility((selection) => selection ? updateFacilityInundation(selection, meters, inundationMethod) : null);
+            setSelectedRoad((selection) => selection ? updateRoadInundation(selection, meters, inundationMethod) : null);
           }}
         />
       </section>
     </main>
   );
+}
+
+function updateRoadInundation(
+  selection: RoadSelection,
+  tideLevelMeters: number,
+  method: InundationMethod
+): RoadSelection {
+  return {
+    road: selection.road,
+    metrics: computeRoadImpactMetrics(selection.road, tideLevelMeters, method)
+  };
 }
 
 function updateFacilityInundation(

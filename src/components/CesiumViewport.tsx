@@ -3,7 +3,7 @@ import type { Cesium3DTileset, CustomShader, Viewer } from "cesium";
 import { Cartesian3, Matrix4, RequestScheduler } from "cesium";
 import { createMaizuruViewer } from "../cesium/createViewer";
 import { attachBuildingPicking } from "../cesium/picking";
-import { loadPlateauBuildings } from "../cesium/plateauLayer";
+import { applyContextLimitMinimums, loadPlateauBuildings } from "../cesium/plateauLayer";
 import { loadGroundElevationLayer, type GroundElevationLayer } from "../cesium/groundElevationLayer";
 import { createInundationLayer, type InundationLayer } from "../cesium/inundationLayer";
 import { createBuildingImpactShader } from "../cesium/buildingImpactShader";
@@ -14,13 +14,24 @@ import type { BuildingSelection, PlateauTilesetDataset, ViewerStatus } from "../
 import { createFacilityLayer, type FacilityLayer } from "../cesium/facilityLayer";
 import { WEST_MAIZURU_FACILITIES } from "../data/facilities";
 import type { FacilityCategoryVisibility, FacilitySelection } from "../types/facility";
+import { createRoadLayer, type RoadLayer, type RoadLayerStats } from "../cesium/roadLayer";
+import { WEST_MAIZURU_ROAD_PROOF } from "../data/roads";
+import type { RoadSelection } from "../types/road";
+import {
+  computeUrbanFunctionImpactState,
+  type UrbanFunctionImpactState
+} from "../data/urbanFunctions";
 
 type Props = {
   dataset: PlateauTilesetDataset;
   onStatusChange: (status: ViewerStatus) => void;
   onBuildingSelect: (selection: BuildingSelection | null) => void;
   onFacilitySelect: (selection: FacilitySelection | null) => void;
+  onRoadSelect: (selection: RoadSelection | null) => void;
+  onRoadStatsChange: (stats: RoadLayerStats) => void;
+  onUrbanFunctionImpactChange: (state: UrbanFunctionImpactState) => void;
   facilityVisibility: FacilityCategoryVisibility;
+  focusedFacilityCategory: FacilitySelection["facility"]["category"] | null;
   groundElevationVisible: boolean;
   inundationVisible: boolean;
   tideLevelMeters: number;
@@ -33,7 +44,11 @@ export function CesiumViewport({
   onStatusChange,
   onBuildingSelect,
   onFacilitySelect,
+  onRoadSelect,
+  onRoadStatsChange,
+  onUrbanFunctionImpactChange,
   facilityVisibility,
+  focusedFacilityCategory,
   groundElevationVisible,
   inundationVisible,
   tideLevelMeters,
@@ -47,16 +62,26 @@ export function CesiumViewport({
   const buildingShaderRef = useRef<CustomShader | null>(null);
   const connectivityRef = useRef<SeaConnectivity | null>(null);
   const facilityLayerRef = useRef<FacilityLayer | null>(null);
+  const roadLayerRef = useRef<RoadLayer | null>(null);
   const elevationVisibleRef = useRef(groundElevationVisible);
   const inundationVisibleRef = useRef(inundationVisible);
   const tideLevelRef = useRef(tideLevelMeters);
   const inundationMethodRef = useRef(inundationMethod);
   const facilityVisibilityRef = useRef(facilityVisibility);
+  const focusedFacilityCategoryRef = useRef(focusedFacilityCategory);
+  const urbanFunctionImpactRef = useRef<UrbanFunctionImpactState>(
+    computeUrbanFunctionImpactState(WEST_MAIZURU_FACILITIES, null, null, tideLevelMeters, inundationMethod)
+  );
 
   useEffect(() => {
     facilityVisibilityRef.current = facilityVisibility;
-    facilityLayerRef.current?.setVisibility(facilityVisibility);
+    updateFacilityDisplay();
   }, [facilityVisibility]);
+
+  useEffect(() => {
+    focusedFacilityCategoryRef.current = focusedFacilityCategory;
+    updateFacilityDisplay();
+  }, [focusedFacilityCategory]);
 
   useEffect(() => {
     elevationVisibleRef.current = groundElevationVisible;
@@ -74,12 +99,24 @@ export function CesiumViewport({
     tideLevelRef.current = tideLevelMeters;
     inundationLayerRef.current?.setTideLevel(tideLevelMeters);
     buildingShaderRef.current?.setUniform("u_tide", tideLevelMeters);
+    const roadStats = roadLayerRef.current?.setScenario(tideLevelMeters, inundationMethodRef.current);
+    if (roadStats) {
+      publishRoadStats(roadStats);
+      onRoadStatsChange(roadStats);
+    }
+    publishUrbanFunctionImpact();
   }, [tideLevelMeters]);
 
   useEffect(() => {
     inundationMethodRef.current = inundationMethod;
     inundationLayerRef.current?.setMethod(inundationMethod);
     buildingShaderRef.current?.setUniform("u_seaConnected", inundationMethod === "sea-connected");
+    const roadStats = roadLayerRef.current?.setScenario(tideLevelRef.current, inundationMethod);
+    if (roadStats) {
+      publishRoadStats(roadStats);
+      onRoadStatsChange(roadStats);
+    }
+    publishUrbanFunctionImpact();
   }, [inundationMethod]);
 
   useEffect(() => {
@@ -89,6 +126,17 @@ export function CesiumViewport({
     const elevationAbortController = new AbortController();
     const startedAt = performance.now();
     const { viewer, destroy } = createMaizuruViewer(hostRef.current);
+    if (import.meta.env.DEV) {
+      (window as unknown as { __PLATEAU_VIEWER__?: Viewer }).__PLATEAU_VIEWER__ = viewer;
+    }
+    const contextLimitsReport = applyContextLimitMinimums(
+      ((viewer.scene as unknown as { context?: { _gl?: WebGLRenderingContext } }).context)?._gl
+    );
+    if (import.meta.env.DEV) {
+      (window as unknown as {
+        __PLATEAU_CONTEXT_LIMITS__?: typeof contextLimitsReport;
+      }).__PLATEAU_CONTEXT_LIMITS__ = contextLimitsReport;
+    }
     applyRequestSchedulerWorkaround();
     const detachPicking = attachBuildingPicking(
       viewer,
@@ -98,10 +146,22 @@ export function CesiumViewport({
       () => tideLevelRef.current,
       () => inundationMethodRef.current,
       () => facilityVisibilityRef.current,
-      onFacilitySelect
+      onFacilitySelect,
+      (roadId) => roadLayerRef.current?.selectionForRoadId(roadId) ?? null,
+      onRoadSelect
     );
+    onUrbanFunctionImpactChange(urbanFunctionImpactRef.current);
+    publishUrbanFunctionImpactDev(urbanFunctionImpactRef.current);
     facilityLayerRef.current = createFacilityLayer(viewer, WEST_MAIZURU_FACILITIES);
-    facilityLayerRef.current.setVisibility(facilityVisibility);
+    updateFacilityDisplay();
+    roadLayerRef.current = createRoadLayer(
+      viewer,
+      WEST_MAIZURU_ROAD_PROOF.roads,
+      tideLevelRef.current,
+      inundationMethodRef.current
+    );
+    publishRoadStats(roadLayerRef.current.stats());
+    onRoadStatsChange(roadLayerRef.current.stats());
 
     const applyBuildingImpact = () => {
       const tileset = tilesetRef.current;
@@ -174,6 +234,7 @@ export function CesiumViewport({
           tideLevelRef.current,
           inundationMethodRef.current
         );
+        publishUrbanFunctionImpact();
         applyBuildingImpact();
         onGroundElevationStateChange({ loading: false, error: null });
       })
@@ -239,13 +300,70 @@ export function CesiumViewport({
       connectivityRef.current = null;
       facilityLayerRef.current?.destroy();
       facilityLayerRef.current = null;
+      roadLayerRef.current?.destroy();
+      roadLayerRef.current = null;
+      if (import.meta.env.DEV) {
+        delete (window as unknown as {
+          __PLATEAU_CONTEXT_LIMITS__?: typeof contextLimitsReport;
+          __PLATEAU_VIEWER__?: Viewer;
+        }).__PLATEAU_CONTEXT_LIMITS__;
+        delete (window as unknown as {
+          __PLATEAU_CONTEXT_LIMITS__?: typeof contextLimitsReport;
+          __PLATEAU_VIEWER__?: Viewer;
+        }).__PLATEAU_VIEWER__;
+      }
       removeFpsProbe();
       detachPicking();
       destroy();
     };
-  }, [dataset, onBuildingSelect, onFacilitySelect, onGroundElevationStateChange, onStatusChange]);
+  }, [
+    dataset,
+    onBuildingSelect,
+    onFacilitySelect,
+    onGroundElevationStateChange,
+    onRoadSelect,
+    onRoadStatsChange,
+    onUrbanFunctionImpactChange,
+    onStatusChange
+  ]);
 
   return <div ref={hostRef} className="cesium-host" />;
+
+  function publishUrbanFunctionImpact() {
+    const impact = computeUrbanFunctionImpactState(
+      WEST_MAIZURU_FACILITIES,
+      elevationLayerRef.current?.data ?? null,
+      connectivityRef.current,
+      tideLevelRef.current,
+      inundationMethodRef.current
+    );
+    urbanFunctionImpactRef.current = impact;
+    onUrbanFunctionImpactChange(impact);
+    publishUrbanFunctionImpactDev(impact);
+    updateFacilityDisplay();
+  }
+
+  function updateFacilityDisplay() {
+    facilityLayerRef.current?.setDisplay({
+      visibility: facilityVisibilityRef.current,
+      focusedCategory: focusedFacilityCategoryRef.current,
+      affectedFacilityIds: urbanFunctionImpactRef.current.affectedFacilityIds
+    });
+  }
+}
+
+function publishRoadStats(stats: RoadLayerStats) {
+  if (!import.meta.env.DEV) return;
+  (window as unknown as {
+    __PLATEAU_ROAD_STATS__?: RoadLayerStats;
+  }).__PLATEAU_ROAD_STATS__ = stats;
+}
+
+function publishUrbanFunctionImpactDev(state: UrbanFunctionImpactState) {
+  if (!import.meta.env.DEV) return;
+  (window as unknown as {
+    __PLATEAU_URBAN_FUNCTION_SUMMARIES__?: UrbanFunctionImpactState["summaries"];
+  }).__PLATEAU_URBAN_FUNCTION_SUMMARIES__ = state.summaries;
 }
 
 function startFpsProbe(viewer: Viewer, onFps: (fps: number) => void) {
