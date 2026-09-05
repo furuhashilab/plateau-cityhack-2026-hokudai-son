@@ -1,3 +1,4 @@
+import { facilityCategoryLabel } from "../data/facilityLabels";
 import type { FacilitySelection } from "../types/facility";
 
 export function SelectedFacilityPanel({ selection }: { selection: FacilitySelection }) {
@@ -7,7 +8,7 @@ export function SelectedFacilityPanel({ selection }: { selection: FacilitySelect
       <div className="eyebrow">選んだ施設</div>
       <h2>{facility.name}</h2>
       <dl>
-        <div><dt>種類</dt><dd>{categoryLabel(facility.category)}</dd></div>
+        <div><dt>種類</dt><dd>{facilityCategoryLabel(facility.category).shortName}</dd></div>
         <div><dt>施設</dt><dd>{facility.facilityType}</dd></div>
         <div><dt>地面の高さ</dt><dd>{formatMeters(selection.groundElevationMeters)}</dd></div>
         <div><dt>海の水位</dt><dd>{formatMeters(selection.tideLevelMeters, true)}</dd></div>
@@ -38,10 +39,6 @@ export function SelectedFacilityPanel({ selection }: { selection: FacilitySelect
       </dl>
     </div>
   );
-}
-
-function categoryLabel(category: string) {
-  return ({ medical: "病院", evacuation: "避難できる場所", transport: "交通", "daily-life": "くらし" } as Record<string, string>)[category] ?? category;
 }
 
 function formatMeters(value: number | null, includeSign = false) {

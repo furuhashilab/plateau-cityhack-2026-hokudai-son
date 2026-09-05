@@ -86,17 +86,28 @@ Measure:
 
 ## Current Phase
 
-Phase 1B: Ground Elevation / Lowland Visualization.
+Presentation MVP: question -> action -> comparison -> conversation.
 
-Phase 1B decisions:
+Ground elevation and visual-terrain decisions:
 
 - use GSI DEM5A PNG tiles as official orthometric ground-elevation data
 - limit runtime data to a nine-tile West Maizuru z15 AOI
 - keep decoded elevation values outside React for future flood-depth reuse
 - render elevation as a small raster overlay, not Cesium Entities or React cells
-- keep the ellipsoid globe and retain `heightOffsetMeters: -36` only as the Phase 1A visual workaround
-- do not interpret `-36 m` as a measured geoid height or apply it to DEM/flood calculations
+- keep Cesium visual terrain as the default ellipsoid globe for demo stability
+- keep PLATEAU building `heightOffsetMeters` at `-36` as a rendering-only visual alignment workaround
+- do not apply the PLATEAU visual height offset to DEM/flood calculations
 - see `docs/PHASE1B_ELEVATION_INVESTIGATION.md` for candidate comparison and height-reference details
+
+User-facing MVP flow:
+
+1. Intro asks children to think about future Maizuru.
+2. User raises an assumed tide level.
+3. A problem prompt appears when affected facility counts increase.
+4. The prompt leads directly into future facility placement.
+5. The proposed location returns grounded metrics.
+6. Up to three proposed locations can be compared without ranking or optimization.
+7. The UI asks which place the user prefers and why.
 
 Allowed:
 

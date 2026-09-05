@@ -1,4 +1,5 @@
 import { FACILITY_CATEGORIES } from "../data/facilities";
+import { facilityCategoryLabel } from "../data/facilityLabels";
 import { urbanFunctionSummaryWithProposal, type UrbanFunctionSummary } from "../data/urbanFunctions";
 import type { FacilityCategory, FacilityCategoryVisibility } from "../types/facility";
 import type { CSSProperties } from "react";
@@ -14,6 +15,7 @@ type Props = {
   onFocusChange: (category: FacilityCategory | null) => void;
   onBeginPlacement: (category: FacilityCategory) => void;
   onCancelPlacement: () => void;
+  onRemoveFutureFacility: () => void;
 };
 
 export function UrbanFunctionsControl({
@@ -25,14 +27,15 @@ export function UrbanFunctionsControl({
   onChange,
   onFocusChange,
   onBeginPlacement,
-  onCancelPlacement
+  onCancelPlacement,
+  onRemoveFutureFacility
 }: Props) {
   const activeSummary = summaries.find(s => s.category === focusedCategory) ?? null;
   const placing = activeSummary ? placementCategory === activeSummary.category : false;
   const hasProposal = activeSummary ? futureFacility?.category === activeSummary.category : false;
   const proposed = activeSummary ? urbanFunctionSummaryWithProposal(activeSummary, futureFacility) : null;
   const futureActionLabel = activeSummary
-    ? `未来の${childLabel(activeSummary.category)}を${futureFacility ? "置き直す" : "置く"}`
+    ? `未来の${childLabel(activeSummary.category, "futureName")}を${futureFacility ? "置き直す" : "置く"}`
     : "";
 
   return (
@@ -59,7 +62,9 @@ export function UrbanFunctionsControl({
               <span className="chip-name">{childLabel(summary.category)}</span>
               <span className="chip-total">{summary.totalCount}こ</span>
               <span className={summary.affectedCount > 0 ? "chip-impact affected" : "chip-impact clear"}>
-                {summary.affectedCount > 0 ? `${summary.affectedCount}こ 影響あり` : "安全"}
+                {summary.affectedCount > 0
+                  ? `${summary.affectedCount}こ / 約${formatPeople(summary.populationImpact.affectedPopulation)}人`
+                  : "安全"}
               </span>
             </button>
           );
@@ -76,6 +81,8 @@ export function UrbanFunctionsControl({
               {activeSummary.totalCount}こ /{" "}
               {activeSummary.unaffectedCount}こ だいじょうぶそう
             </strong>
+            <span>人への影響</span>
+            <strong>約{formatPeople(activeSummary.populationImpact.affectedPopulation)}人</strong>
           </div>
 
           {/* Future comparison — only when future facility is placed for this category */}
@@ -87,6 +94,17 @@ export function UrbanFunctionsControl({
               <strong>
                 {proposed.totalCount}このうち {proposed.unaffectedCount}こ だいじょうぶそう
               </strong>
+              <span>改善人数</span>
+              <strong>
+                約{formatPeople(futureFacility?.evaluation.populationImpact.newlyCoveredPopulation ?? 0)}人分
+              </strong>
+              <button
+                type="button"
+                className="remove-future-button inline-remove"
+                onClick={onRemoveFutureFacility}
+              >
+                この候補を消す
+              </button>
             </div>
           ) : null}
 
@@ -125,22 +143,27 @@ export function UrbanFunctionsControl({
   );
 }
 
-function childLabel(category: FacilityCategory) {
-  return ({
-    medical: "病院",
-    evacuation: "避難できる場所",
-    transport: "交通",
-    "daily-life": "くらし"
-  } satisfies Record<FacilityCategory, string>)[category];
+function childLabel(
+  category: FacilityCategory,
+  key: "shortName" | "futureName" = "shortName"
+) {
+  return facilityCategoryLabel(category)[key];
 }
 
 function affectedTotal(summaries: UrbanFunctionSummary[]) {
   return summaries.reduce((sum, s) => sum + s.affectedCount, 0);
 }
 
+function affectedPopulationTotal(summaries: UrbanFunctionSummary[]) {
+  return summaries.reduce((sum, s) => sum + s.populationImpact.affectedPopulation, 0);
+}
+
 function summaryHeadline(summaries: UrbanFunctionSummary[]) {
   const affected = affectedTotal(summaries);
-  return affected > 0 ? `${affected}こ 水の影響を受けるかも` : "水の影響は見つかっていません";
+  const population = affectedPopulationTotal(summaries);
+  return affected > 0
+    ? `${affected}こ / 約${formatPeople(population)}人に影響かも`
+    : "水の影響は見つかっていません";
 }
 
 function futureFacilityStatus(futureFacility: FutureFacilityScenario | null) {
@@ -149,4 +172,8 @@ function futureFacilityStatus(futureFacility: FutureFacilityScenario | null) {
   return futureFacility.impact.depthMeters > 0
     ? "1こ 水の影響を受けるかも"
     : "1こ だいじょうぶそう";
+}
+
+function formatPeople(value: number) {
+  return value.toLocaleString("ja-JP");
 }

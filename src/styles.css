@@ -78,6 +78,21 @@ body {
   pointer-events: auto;
 }
 
+.prompt-overlay {
+  left: 50%;
+  top: 18px;
+  transform: translateX(-50%);
+  width: min(460px, calc(100vw - 32px));
+  pointer-events: auto;
+}
+
+.comparison-overlay {
+  right: 16px;
+  bottom: 16px;
+  width: min(360px, calc(100vw - 32px));
+  pointer-events: auto;
+}
+
 .right-middle {
   top: 50%;
   right: 16px;
@@ -233,6 +248,13 @@ body {
   overflow-wrap: anywhere;
 }
 
+.remove-future-button.inline-remove {
+  grid-column: 1 / -1;
+  margin-top: 4px;
+  border-color: rgba(239, 68, 68, 0.45);
+  color: #fca5a5;
+}
+
 .future-action-row {
   display: flex;
   align-items: center;
@@ -247,7 +269,9 @@ body {
 }
 
 .future-add-button,
-.remove-future-button {
+.remove-future-button,
+.replace-future-button,
+.reset-comparison-button {
   border: 1px solid rgba(143, 211, 255, 0.42);
   border-radius: 6px;
   background: rgba(8, 17, 29, 0.72);
@@ -501,14 +525,478 @@ body {
 }
 
 .remove-future-button {
-  margin-top: 13px;
   border-color: rgba(251, 113, 133, 0.55);
   color: #fecdd3;
 }
 
+.replace-future-button {
+  border-color: rgba(74, 222, 128, 0.55);
+  color: #bbf7d0;
+}
+
+.future-panel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 13px;
+}
+
+.future-delete-details {
+  min-width: 0;
+}
+
+.future-delete-details summary {
+  border: 1px solid rgba(251, 113, 133, 0.55);
+  border-radius: 6px;
+  color: #fecdd3;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 850;
+  padding: 6px 8px;
+}
+
+.future-delete-details .remove-future-button {
+  margin-top: 7px;
+  width: 100%;
+}
+
+.future-result-card {
+  margin: 12px 0;
+  border: 1px solid rgba(74, 222, 128, 0.28);
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.48);
+  padding: 10px;
+}
+
+.result-card-title {
+  color: #86efac;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.future-result-card h3 {
+  margin: 3px 0 9px;
+  color: #f8fafc;
+  font-size: 15px;
+  line-height: 1.25;
+}
+
+.future-result-card dl {
+  gap: 7px;
+}
+
+.future-result-card dl div {
+  grid-template-columns: 104px minmax(0, 1fr);
+}
+
+.future-result-card p {
+  max-height: none;
+  margin: 9px 0 0;
+  overflow: visible;
+  color: #cbd5e1;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.comparison-panel {
+  width: 100%;
+  border-color: rgba(74, 222, 128, 0.34);
+  background: rgba(12, 18, 26, 0.86);
+}
+
+.comparison-topline {
+  margin-bottom: 8px;
+  color: #86efac;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.comparison-grid {
+  display: grid;
+  gap: 8px;
+}
+
+.comparison-item {
+  border: 1px solid rgba(226, 232, 240, 0.16);
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.52);
+  padding: 10px;
+}
+
+.comparison-item h2 {
+  margin: 0;
+  color: #f8fafc;
+  font-size: 16px;
+}
+
+.comparison-item p {
+  max-height: none;
+  margin: 2px 0 8px;
+  overflow: visible;
+  color: #93c5fd;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.comparison-item dl {
+  gap: 5px;
+}
+
+.comparison-item dl div {
+  grid-template-columns: 76px minmax(0, 1fr);
+  gap: 8px;
+}
+
+.comparison-question {
+  max-height: none;
+  margin: 10px 0 0;
+  overflow: visible;
+  color: #bbf7d0;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1.45;
+}
+
+.reset-comparison-button {
+  margin-top: 10px;
+  border-color: rgba(251, 113, 133, 0.48);
+  color: #fecdd3;
+}
+
+.problem-prompt-card {
+  width: 100%;
+  border-color: rgba(249, 115, 22, 0.45);
+  background: rgba(15, 23, 42, 0.9);
+}
+
+.problem-prompt-topline {
+  margin-bottom: 5px;
+  color: #fdba74;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.problem-prompt-card h2 {
+  margin: 0;
+  color: #f8fafc;
+  font-size: 16px;
+  line-height: 1.3;
+}
+
+.problem-prompt-card p {
+  margin: 7px 0 0;
+  color: #dbeafe;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.problem-population-highlight {
+  margin: 9px 0 0;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.problem-question-text {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  font-weight: 700;
+}
+
+.problem-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.problem-primary-button,
+.problem-secondary-button,
+.intro-start-button {
+  border: 1px solid transparent;
+  border-radius: 7px;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.problem-primary-button {
+  background: #f97316;
+  color: #fff7ed;
+  padding: 8px 10px;
+}
+
+.problem-secondary-button {
+  background: rgba(15, 23, 42, 0.68);
+  border-color: rgba(226, 232, 240, 0.2);
+  color: #cbd5e1;
+  padding: 8px 10px;
+}
+
+.intro-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 24px;
+  background:
+    linear-gradient(90deg, rgba(15, 23, 42, 0.34), rgba(15, 23, 42, 0.1) 44%, rgba(15, 23, 42, 0) 72%);
+  pointer-events: none;
+}
+
+.intro-panel {
+  width: min(500px, calc(100vw - 32px));
+  border: 1px solid rgba(255, 255, 255, 0.74);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.91);
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.32);
+  color: #0f172a;
+  padding: 24px;
+  pointer-events: auto;
+}
+
+.intro-kicker {
+  margin: 0 0 8px;
+  color: #0369a1;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.intro-panel h1 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 31px;
+  line-height: 1.1;
+}
+
+.intro-question {
+  margin: 10px 0 0;
+  color: #166534;
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.intro-copy {
+  margin: 16px 0 0;
+  color: #334155;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.intro-start-button {
+  margin-top: 22px;
+  background: #0284c7;
+  color: #f8fafc;
+  padding: 12px 16px;
+  font-size: 15px;
+}
+
+@media (max-width: 720px) {
+  .intro-backdrop {
+    align-items: flex-end;
+    justify-content: center;
+    background:
+      linear-gradient(180deg, rgba(15, 23, 42, 0.02), rgba(15, 23, 42, 0.28));
+  }
+
+  .intro-panel {
+    padding: 20px;
+  }
+
+  .intro-panel h1 {
+    font-size: 28px;
+  }
+}
+
+/* Presentation UI: light panels over a map-first Cesium view. */
+body {
+  background: #eef7fb;
+  color: #0f172a;
+}
+
+.panel,
+.plateau-badge {
+  border-color: rgba(148, 163, 184, 0.34);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 16px 38px rgba(15, 23, 42, 0.16);
+  color: #0f172a;
+}
+
+.plateau-badge summary span,
+.eyebrow,
+.layer-kind,
+.visibility-summary,
+.section-summary span,
+.current-state-row span,
+.proposal-comparison span {
+  color: #0369a1;
+}
+
+.plateau-badge summary strong,
+.section-summary span,
+.water-heading span,
+.chip-name,
+.current-state-row strong,
+.proposal-comparison strong,
+dd,
+.future-result-card h3,
+.problem-prompt-card h2,
+.comparison-item h2 {
+  color: #0f172a;
+}
+
+.section-summary strong,
+dt,
+.chip-total,
+.elevation-toggle small,
+.method-control small,
+.range-labels,
+.muted,
+details p,
+.elevation-legend p,
+.road-note {
+  color: #64748b;
+}
+
+.water-panel {
+  border-color: rgba(14, 165, 233, 0.42);
+  background: rgba(255, 255, 255, 0.94);
+}
+
+.water-heading strong {
+  color: #0284c7;
+}
+
+.category-chip {
+  border-color: rgba(148, 163, 184, 0.28);
+  background: rgba(248, 250, 252, 0.86);
+  color: #0f172a;
+}
+
+.category-chip:hover,
+.category-chip.active {
+  background: #ffffff;
+  border-color: rgba(14, 165, 233, 0.55);
+}
+
+.chip-impact.affected {
+  color: #ea580c;
+}
+
+.chip-impact.clear,
+.facility-status.safe,
+.status-dot.interactive {
+  color: #15803d;
+}
+
+.active-category-detail,
+.proposal-comparison,
+.visibility-details,
+.facility-toggles.compact,
+.tide-control,
+.method-control,
+.elevation-legend {
+  border-color: rgba(148, 163, 184, 0.24);
+}
+
+.future-add-button,
+.remove-future-button,
+.replace-future-button,
+.reset-comparison-button,
+.problem-secondary-button {
+  background: #ffffff;
+  border-color: rgba(148, 163, 184, 0.38);
+  color: #0f172a;
+}
+
+.future-add-button {
+  border-color: rgba(14, 165, 233, 0.45);
+  color: #075985;
+}
+
+.future-add-button[aria-pressed="true"] {
+  border-color: rgba(234, 88, 12, 0.55);
+  background: #fff7ed;
+  color: #9a3412;
+}
+
+.replace-future-button {
+  border-color: rgba(22, 163, 74, 0.42);
+  color: #166534;
+}
+
+.remove-future-button {
+  border-color: rgba(220, 38, 38, 0.38);
+  color: #991b1b;
+}
+
+.future-delete-details summary,
+.reset-comparison-button {
+  background: #ffffff;
+  border-color: rgba(220, 38, 38, 0.38);
+  color: #991b1b;
+}
+
+.problem-prompt-card {
+  border-color: rgba(249, 115, 22, 0.42);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.problem-prompt-topline {
+  color: #ea580c;
+}
+
+.problem-prompt-card p {
+  color: #334155;
+}
+
+.problem-primary-button {
+  background: #ea580c;
+  color: #fff7ed;
+}
+
+.future-result-card,
+.comparison-item {
+  border-color: rgba(148, 163, 184, 0.26);
+  background: #f8fafc;
+}
+
+.comparison-panel {
+  border-color: rgba(22, 163, 74, 0.32);
+  background: rgba(255, 255, 255, 0.93);
+}
+
+.comparison-topline,
+.result-card-title,
+.comparison-question {
+  color: #15803d;
+}
+
+.comparison-item p {
+  color: #0369a1;
+}
+
+.future-result-card p {
+  color: #475569;
+}
+
+.placement-guide {
+  border-color: rgba(234, 88, 12, 0.42);
+  background: rgba(255, 247, 237, 0.96);
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.18);
+  color: #9a3412;
+}
+
+.facility-symbol {
+  border-color: #ffffff;
+  color: #0f172a;
+}
+
 .facility-panel a,
 .road-panel a {
-  color: #8fd3ff;
+  color: #0369a1;
 }
 
 .road-panel h2 {
@@ -797,6 +1285,202 @@ details p {
   line-height: 1.5;
 }
 
+/* Final light-theme overrides must come after the legacy dark panel rules. */
+body {
+  background: #eef7fb;
+  color: #0f172a;
+}
+
+.panel,
+.plateau-badge {
+  border-color: rgba(148, 163, 184, 0.34);
+  background: rgba(255, 255, 255, 0.93);
+  box-shadow: 0 16px 38px rgba(15, 23, 42, 0.16);
+  color: #0f172a;
+}
+
+.plateau-badge summary span,
+.eyebrow,
+.layer-kind,
+.visibility-summary,
+.section-summary span,
+.current-state-row span,
+.proposal-comparison span {
+  color: #0369a1;
+}
+
+.plateau-badge summary strong,
+.section-summary span,
+.water-heading span,
+.chip-name,
+.current-state-row strong,
+.proposal-comparison strong,
+dd,
+.future-result-card h3,
+.problem-prompt-card h2,
+.comparison-item h2 {
+  color: #0f172a;
+}
+
+.section-summary strong,
+dt,
+.chip-total,
+.elevation-toggle small,
+.method-control small,
+.range-labels,
+.muted,
+details,
+details p,
+.elevation-legend p,
+.road-note {
+  color: #64748b;
+}
+
+.water-panel {
+  border-color: rgba(14, 165, 233, 0.42);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.water-heading strong {
+  color: #0284c7;
+}
+
+.category-chip {
+  border-color: rgba(148, 163, 184, 0.28);
+  background: rgba(248, 250, 252, 0.9);
+  color: #0f172a;
+}
+
+.category-chip:hover,
+.category-chip.active {
+  background: #ffffff;
+  border-color: rgba(14, 165, 233, 0.55);
+}
+
+.chip-impact.affected {
+  color: #ea580c;
+}
+
+.chip-impact.clear,
+.facility-status.safe {
+  color: #15803d;
+}
+
+.active-category-detail,
+.proposal-comparison,
+.visibility-details,
+.facility-toggles.compact,
+.tide-control,
+.method-control,
+.elevation-legend {
+  border-color: rgba(148, 163, 184, 0.24);
+}
+
+.future-add-button,
+.remove-future-button,
+.replace-future-button,
+.reset-comparison-button,
+.problem-secondary-button {
+  background: #ffffff;
+  border-color: rgba(148, 163, 184, 0.38);
+  color: #0f172a;
+}
+
+.future-add-button {
+  border-color: rgba(14, 165, 233, 0.45);
+  color: #075985;
+}
+
+.future-add-button[aria-pressed="true"] {
+  border-color: rgba(234, 88, 12, 0.55);
+  background: #fff7ed;
+  color: #9a3412;
+}
+
+.replace-future-button {
+  border-color: rgba(22, 163, 74, 0.42);
+  color: #166534;
+}
+
+.remove-future-button {
+  border-color: rgba(220, 38, 38, 0.38);
+  color: #991b1b;
+}
+
+.future-delete-details summary,
+.reset-comparison-button {
+  background: #ffffff;
+  border-color: rgba(220, 38, 38, 0.38);
+  color: #991b1b;
+}
+
+.problem-prompt-card {
+  border-color: rgba(249, 115, 22, 0.42);
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.problem-prompt-topline {
+  color: #ea580c;
+}
+
+.problem-prompt-card p,
+.problem-population-highlight,
+.problem-question-text {
+  color: #334155;
+}
+
+.problem-population-highlight strong {
+  color: #ea580c;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.problem-question-text {
+  color: #1e3a5f;
+}
+
+.problem-primary-button {
+  background: #ea580c;
+  color: #fff7ed;
+}
+
+.future-result-card,
+.comparison-item {
+  border-color: rgba(148, 163, 184, 0.26);
+  background: #f8fafc;
+}
+
+.comparison-panel {
+  border-color: rgba(22, 163, 74, 0.32);
+  background: rgba(255, 255, 255, 0.94);
+}
+
+.comparison-topline,
+.result-card-title,
+.comparison-question {
+  color: #15803d;
+}
+
+.comparison-item p {
+  color: #0369a1;
+}
+
+.future-result-card p {
+  color: #475569;
+}
+
+.placement-guide {
+  border-color: rgba(234, 88, 12, 0.42);
+  background: rgba(255, 247, 237, 0.96);
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.18);
+  color: #9a3412;
+}
+
+.facility-symbol {
+  border-color: #ffffff;
+  color: #0f172a;
+}
+
 @media (max-width: 760px) {
   .top-right {
     top: auto;
@@ -806,6 +1490,10 @@ details p {
 
   .bottom-left {
     bottom: 170px;
+  }
+
+  .comparison-overlay {
+    display: none;
   }
 
   .bottom-right {

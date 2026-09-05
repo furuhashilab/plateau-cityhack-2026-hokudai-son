@@ -246,3 +246,46 @@ git diff --stat
 ```
 
 Do not modify anything until the current workspace state and task scope have been summarized.
+
+## Autonomous Development Policy
+
+For the current PLATEAU CityHack development task, continue working autonomously until the requested implementation and verification are complete.
+
+Do NOT pause to ask the user for permission before:
+
+- reading relevant repository files
+- editing files within this repository
+- creating new in-scope source or test files
+- running local non-destructive shell commands
+- running tests, lint, typecheck, and build
+- starting or restarting the local development server when needed
+- inspecting browser behavior
+- debugging implementation problems
+- fixing regressions caused by the current work
+- moving from one already-approved development stage to the next
+- making small implementation decisions required to satisfy the agreed acceptance criteria
+
+When uncertainty exists, inspect the repository, existing documentation, tests, and implementation first and make the most conservative reasonable decision consistent with the approved development plan.
+
+Do not stop merely to report intermediate progress. Continue until the implementation, validation, and final acceptance checks are complete.
+
+### Actions that still require stopping
+
+Do NOT perform the following without explicit user approval:
+
+- git push
+- creating or merging pull requests
+- deleting branches or repositories
+- destructive git operations such as reset --hard
+- discarding unrelated existing changes
+- modifying files outside the authorized project/workspace
+- installing system-wide software
+- using sudo
+- changing machine-level configuration
+- accessing or modifying secrets or credentials
+- making external writes to third-party services
+- materially expanding the agreed project scope
+
+If one of these is genuinely required, stop and explain why.
+
+Otherwise, continue autonomously until completion.

@@ -1,5 +1,6 @@
 import { FACILITY_CATEGORIES } from "./facilities";
 import { inundationDepth, type InundationMethod } from "./inundation";
+import { computeCategoryPopulationImpact, type PopulationImpact } from "./populationImpact";
 import type { LoadedGroundElevation } from "./groundElevation";
 import type { SeaConnectivity } from "./seaConnectivity";
 import type { Facility, FacilityCategory, FacilitySelection } from "../types/facility";
@@ -14,6 +15,7 @@ export type UrbanFunctionSummary = {
   affectedCount: number;
   unaffectedCount: number;
   affectedRatio: number;
+  populationImpact: PopulationImpact;
 };
 
 export type UrbanFunctionImpactState = {
@@ -116,7 +118,12 @@ export function computeUrbanFunctionImpactState(
         totalCount,
         affectedCount,
         unaffectedCount: totalCount - affectedCount,
-        affectedRatio: totalCount > 0 ? affectedCount / totalCount : 0
+        affectedRatio: totalCount > 0 ? affectedCount / totalCount : 0,
+        populationImpact: computeCategoryPopulationImpact({
+          category: category.id,
+          facilities,
+          affectedFacilityIds
+        })
       };
     })
   };

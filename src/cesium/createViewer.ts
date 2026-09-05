@@ -1,4 +1,5 @@
 import {
+  CesiumTerrainProvider,
   Color,
   Credit,
   UrlTemplateImageryProvider,
@@ -34,13 +35,27 @@ export function createMaizuruViewer(container: HTMLElement) {
     })
   );
 
-  viewer.scene.backgroundColor = Color.fromCssColorString("#0b1118");
+  viewer.scene.backgroundColor = Color.fromCssColorString("#eaf6ff");
   viewer.scene.globe.depthTestAgainstTerrain = false;
   viewer.scene.globe.enableLighting = false;
   viewer.scene.fog.enabled = false;
   if (viewer.scene.skyAtmosphere) {
     viewer.scene.skyAtmosphere.show = false;
   }
+
+  // Load PLATEAU terrain so buildings sit on the actual ground surface.
+  // Falls back to ellipsoid if the service is unreachable.
+  void CesiumTerrainProvider.fromUrl("https://tile.plateauview.mlit.go.jp/terrain")
+    .then((terrain) => {
+      if (!viewer.isDestroyed()) {
+        viewer.terrainProvider = terrain;
+        viewer.scene.requestRender();
+      }
+    })
+    .catch(() => {
+      // Ellipsoid terrain remains; buildings may appear slightly elevated.
+    });
+
   viewer.scene.requestRender();
 
   return {

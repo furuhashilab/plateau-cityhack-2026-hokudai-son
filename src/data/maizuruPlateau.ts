@@ -20,20 +20,20 @@ export const MAIZURU_PLATEAU_BUILDINGS: PlateauTilesetDataset = {
     ? "/plateau-proxy/tileset.json"
     : `${MAIZURU_PLATEAU_TILESET_BASE_URL}/tileset.json`,
   sourceUrl: "https://api.plateauview.mlit.go.jp/datacatalog/plateau-datasets",
-  heightOffsetMeters: -36,
-  heightOffsetReason: "Retained visual alignment for the ellipsoid surface; not a DEM correction"
+  heightOffsetMeters: 0,
+  heightOffsetReason: "PLATEAU terrain is loaded; no vertical offset needed"
 };
 
 export const MAIZURU_CAMERA = {
   initialOffset: new HeadingPitchRange(
-    CesiumMath.toRadians(48),
-    CesiumMath.toRadians(-22),
-    960
+    CesiumMath.toRadians(28),
+    CesiumMath.toRadians(-25),
+    1080
   ),
-  fallbackDestination: Cartesian3.fromDegrees(135.3337, 35.4498, 960),
+  fallbackDestination: Cartesian3.fromDegrees(135.3315, 35.4492, 1080),
   fallbackOrientation: {
-    heading: CesiumMath.toRadians(48),
-    pitch: CesiumMath.toRadians(-24),
+    heading: CesiumMath.toRadians(28),
+    pitch: CesiumMath.toRadians(-25),
     roll: 0
   }
 };

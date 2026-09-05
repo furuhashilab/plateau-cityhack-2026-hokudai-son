@@ -2,19 +2,305 @@
 
 ## Last Updated
 
-2026-09-01
+2026-09-05
 
 ## Updated By
 
-Codex (GPT-5)
+Codex GPT-5
 
 ## Current Phase
 
-Phase 2D — Child-friendly Map-first UI Refactor
+Presentation MVP — 人への影響 / 改善人数 / A/B/C比較 / 会話
 
 ## Current Goal
 
-Make the current 3D Maizuru experience understandable to elementary school users by making the map dominant, moving technical details into disclosure controls, and using simple Japanese labels.
+AUTHORITATIVE REQUIREMENTS (2026-09-03) に従い、体験フローの核心を完成させる:
+水位変更 → 人への影響人数 → 問い → 未来施設配置 → 改善人数 → 別地点比較 → 削除・再試行 → 会話
+
+## Pre-URL Map Verification
+
+Status: PASS as of 2026-09-05.
+
+Purpose:
+
+- User asked to understand the current state and verify the map is actually displayed before handing over a URL.
+- No app source changes were made in this pass.
+
+Current implementation summary:
+
+- Vite + React + TypeScript + Cesium app.
+- Initial screen shows the Maizuru 3D map behind an intro overlay.
+- After `まちを見てみる`, the app shows the PLATEAU data badge, advanced details panel, water-level control, Urban Functions panel, and selection/comparison overlays.
+- Cesium renders GSI standard imagery, PLATEAU 2025 Maizuru building 3D Tiles, PLATEAU Terrain, local facility pins, the OSM proof road layer, DEM-derived inundation overlay, and future facility scenarios.
+
+Read-only startup notes:
+
+- `pwd`: `/Users/Rito/plateau-cityhack-2026-hokudai-son-git`
+- Branch: `main`
+- Worktree already had many uncommitted changes before this pass; preserved as-is.
+- `/Users/Rito/RESEARCH_MAC_OPERATING_RULES.md` was requested by `AGENTS.md` but did not exist at that path in this environment.
+
+Static verification:
+
+- `npm run typecheck`: PASS
+- `npm test -- --run`: PASS, 32 tests
+- `npm run build`: PASS, including `postbuild` Cesium static asset preparation
+- `git diff --check`: PASS before this handoff update
+
+Dev runtime verification:
+
+- Dev server started: `npm run dev -- --port 5174`
+- Dev URL: `http://127.0.0.1:5174/plateau-cityhack-2026-hokudai-son/`
+- Chrome CDP port: `9224`
+- Initial map screenshot confirmed visible: `/tmp/plateau-current-initial.png`
+- After-start screenshot confirmed visible: `/tmp/plateau-current-after-start.png`
+- Runtime state after load:
+  - Cesium canvas: `1440x900`
+  - `window.__PLATEAU_VIEWER__`: present
+  - Cesium primitives: `5`
+  - Ground primitives: `1`
+  - Imagery layers: `19`
+  - Terrain provider: `CesiumTerrainProvider`
+  - PLATEAU loaded tile counter sample: `81`
+  - Road stats: `48` road features / `1,400` samples
+  - ContextLimits patch observed: actual vertex texture units `16`, Cesium before `0`, after `16`
+- Mouse-dragged tide slider to `+2.0 m`; verified:
+  - Inundation colors appear on the map.
+  - Problem prompt appears for daily-life/supermarket impact.
+  - Urban Functions count shows `7こ / 約7,923人に影響かも`.
+  - Category summaries update to Medical `2/6`, Evacuation `4/8`, Transport `0/1`, Daily Life `1/3`.
+  - Screenshot: `/tmp/plateau-current-tide-2m-drag.png`
+- Clicked `新しい買い物場所を考える`, then clicked the map to place a future supermarket; verified:
+  - `window.__PLATEAU_FUTURE_FACILITY__` is created.
+  - Future facility panel shows `未来のスーパー`.
+  - Result says `この場所は水の影響を受けなさそう`.
+  - Improvement numbers show affected population `約4,436人`, newly covered `約2,118人`, remaining `約2,318人`.
+  - Comparison card `地点A` appears.
+  - Screenshot: `/tmp/plateau-current-future-placed.png`
+- Dev runtime console/network check:
+  - No relevant console errors during the verified interaction.
+  - No `Network.loadingFailed` events during the verified interaction.
+
+Production-preview runtime verification:
+
+- Preview server started from current `dist`: `npm run preview -- --port 4173`
+- Preview URL: `http://127.0.0.1:4173/plateau-cityhack-2026-hokudai-son/`
+- Initial map screenshot confirmed visible: `/tmp/plateau-preview-initial.png`
+- After-start screenshot confirmed visible: `/tmp/plateau-preview-after-start.png`
+- Production network verification observed successful loads for:
+  - Direct PLATEAU `tileset.json`
+  - Multiple direct PLATEAU `.b3dm` building tile assets
+  - PLATEAU Terrain `layer.json` and terrain tiles
+  - GSI DEM tiles
+- Production preview console/network check:
+  - No console errors observed.
+  - No `Network.loadingFailed` events observed.
+
+Current local servers left running for user review:
+
+- Dev: `http://127.0.0.1:5174/plateau-cityhack-2026-hokudai-son/`
+- Preview: `http://127.0.0.1:4173/plateau-cityhack-2026-hokudai-son/`
+
+## Completed Version Push Prep
+
+Status: PUSH BLOCKED as of 2026-09-05.
+
+- User explicitly requested GitHub push as the completed version.
+- `.codex/` was added to `.gitignore` because `.codex/config.toml` is local Codex execution configuration, not a project deliverable.
+- Final pre-commit checks:
+  - `npm run typecheck`: PASS
+  - `npm test -- --run`: PASS, 32 tests
+  - `npm run build`: PASS, including Cesium static asset postbuild
+- `git diff --check`: PASS
+- Normal local `git add` was blocked by the environment because `.git/index.lock` could not be created: `Operation not permitted`.
+- A temporary Git index/object store in `/tmp/plateau-push.6ZmYnl` successfully produced a completed-version commit object:
+  - Commit SHA: `cf8e0f3cf445de79f90af443d4945fce29d98506`
+  - Tree SHA: `c54908459bf6567575a1d63a30e0fee358ac30fb`
+  - Parent: `73426f31aadd83342454334f9f4b703656fb8e77`
+- The actual push did not complete because this machine lacks GitHub write authentication:
+  - SSH: `git@github.com: Permission denied (publickey).`
+  - HTTPS: `fatal: could not read Username for 'https://github.com': Device not configured`
+- Remote `origin/main` was checked before the attempt and still matched local parent `73426f31aadd83342454334f9f4b703656fb8e77`, so no remote divergence was observed before push.
+- If authentication is fixed while `/tmp/plateau-push.6ZmYnl` still exists, the prepared commit can be pushed with:
+  - `GIT_INDEX_FILE=/tmp/plateau-push.6ZmYnl/index GIT_OBJECT_DIRECTORY=/tmp/plateau-push.6ZmYnl/objects GIT_ALTERNATE_OBJECT_DIRECTORIES=/Users/Rito/plateau-cityhack-2026-hokudai-son-git/.git/objects git push origin cf8e0f3cf445de79f90af443d4945fce29d98506:refs/heads/main`
+
+## AUTHORITATIVE REQUIREMENTS 対応ステータス (2026-09-03)
+
+### 完了済み
+- 3-1/3-2 人口計算コアバグ修正: `computeCategoryPopulationImpact` の影響人口計算を修正。
+  - 旧: 影響施設に近いセルをそのまま集計（安全施設でカバーされている人口を二重計上）
+  - 新: 「水害前に任意施設の圏内」かつ「水害後に安全施設の圏外」のセルのみを集計
+  - 改善人口: 影響人口のサブセットのみ（二重計上なし）
+- 3-4 削除機能: `<details>`から直接ボタン「この候補を消す」に変更
+- 3-5 ProblemPrompt: 人口数値を視覚的に強調（`.problem-population-highlight strong`）
+- 3-3 A/B/C比較: 問い文言を「どちらの場所がいいと思う？」に強化
+- テスト追加: vitest 32テスト全通過（影響人口・改善人口・二重計上防止・距離判定・カテゴリ別・比較・削除・リセット・水位差・ラベルマッピング）
+- build/typecheck/test: 全PASS
+
+### 未解決
+- 建物浮き・ピン浮きの発表前再確認（ブラウザ未確認）
+- モバイルレイアウト（MVP必須ではない）
+
+## Height Alignment and Placement Button Fix
+
+Status: PASS as of 2026-09-03.
+
+Context:
+
+- User reported:
+  - 3D data appeared to float above the map.
+  - Future-facility delete/move controls made the proposal disappear.
+  - Selected facility markers appeared to float above surrounding buildings.
+
+Implementation:
+
+- `src/cesium/createViewer.ts` no longer enables PLATEAU-Terrain by default.
+- `src/data/maizuruPlateau.ts` restores `heightOffsetMeters: -36` as a rendering-only visual alignment workaround.
+- `src/cesium/facilityLayer.ts` anchors existing facility marker positions at height `0` and sets billboard/label `disableDepthTestDistance` to `0`, so markers are depth-tested instead of always drawing above buildings.
+- `src/cesium/futureFacilityLayer.ts` anchors future facility billboards/labels with `HeightReference.CLAMP_TO_GROUND` and depth testing enabled. The future 3D box still uses `RELATIVE_TO_GROUND` so its bottom sits on the ground.
+- `src/components/SelectedFutureFacilityPanel.tsx` removes the visible delete button from the demo UI.
+- `src/app/App.tsx` changes the replace/move action so the existing future proposal and selected panel remain visible while the user chooses another location.
+- `docs/CURRENT_DECISIONS.md`, `docs/PHASE1B_ELEVATION_INVESTIGATION.md`, and `docs/DEMO_SCENARIO.md` now document the ellipsoid + `-36 m` visual-offset decision.
+
+Runtime verification:
+
+- Dev server: `npm run dev -- --port 5174`
+- Local URL: `http://127.0.0.1:5174/plateau-cityhack-2026-hokudai-son/`
+- Chrome CDP port: `9224`
+- Verified fresh page load and start-button flow.
+- Verified `window.__PLATEAU_VIEWER__.terrainProvider.constructor.name` is `EllipsoidTerrainProvider2`.
+- Verified existing facility billboard depth-test distances sample as `0`.
+- Verified future facility placement creates `window.__PLATEAU_FUTURE_FACILITY__`.
+- Verified future facility panel remains visible after pressing `別の場所に置いてみる`.
+- Verified visible delete button is absent after future placement.
+- Verified no relevant console errors.
+- Screenshot: `/tmp/plateau-height-placement-fix.png`.
+
+Static verification:
+
+- `git diff --check`: PASS
+- `npm run typecheck`: PASS
+- `npm run build`: PASS
+
+## Map Visibility Fix
+
+Status: PASS as of 2026-09-03.
+
+Context:
+
+- User reported that the map was not visible enough.
+- Real Chrome/CDP verification showed Cesium was rendering, but the initial intro used a full-screen blur/scrim and the normal control panels were visible underneath it.
+
+Implementation:
+
+- `src/styles.css` removed the intro overlay backdrop blur, reduced the scrim to a left-side gradient, and made the intro panel slightly smaller/left-aligned.
+- `src/app/App.tsx` now hides the normal app controls until the intro is dismissed, leaving the first view as Cesium map + intro only.
+- After `まちを見てみる`, the existing data badge, details panel, water control, urban functions panel, selection panel, comparison panel, prompts, and placement guide render as before.
+
+Runtime verification:
+
+- Dev server: `npm run dev -- --port 5174`
+- Local URL: `http://127.0.0.1:5174/plateau-cityhack-2026-hokudai-son/`
+- Chrome CDP port: `9224`
+- Initial screen verified:
+  - Cesium canvas `1200x1017`
+  - `window.__PLATEAU_VIEWER__` exists
+  - `viewer.scene.primitives.length === 5`
+  - `viewer.imageryLayers.length === 19`
+  - terrain provider is `CesiumTerrainProvider`
+  - water and urban controls hidden before intro dismissal
+  - no Vite error overlay
+- Start-button screen verified:
+  - intro hidden
+  - water and urban controls visible
+  - no relevant console errors
+- Screenshots:
+  - `/tmp/plateau-map-fix-initial.png`
+  - `/tmp/plateau-map-fix-after-start.png`
+
+Static verification:
+
+- `git diff --check`: PASS
+- `npm run typecheck`: PASS
+- `npm run build`: PASS
+
+## Final MVP Experience Pass
+
+Status: PASS as of 2026-09-03.
+
+Implementation:
+
+- Added intro overlay: `舞鶴が水につかったら！？` -> `まちを見てみる`.
+- Changed water UI to frame the slider as `もし海の水がここまで来たら？` and retained `ためしの水位です。予報ではありません。`.
+- Centralized child-facing facility labels in `src/data/facilityLabels.ts`.
+- Updated category labels to match actual data:
+  - medical: `病院・医院`
+  - evacuation: `にげる場所`
+  - transport: `駅・移動`
+  - daily-life: `スーパー`
+- Added problem prompt trigger when an affected count increases; keys use `category + affectedCount` so the same problem is not repeatedly shown in one session.
+- Problem prompt CTA starts existing future-facility placement for that category.
+- Added location evaluation for future facilities:
+  - ground elevation minus selected tide level
+  - straight-line distance to the existing transport facility category
+  - existing facility count within 800 m
+- Added comparison candidates, keeping up to three proposed locations as `地点A/B/C`.
+- Comparison asks `どちらの場所がいいと思う？どうして？` and does not rank or recommend.
+- Future facility panel now exposes `別の場所に置いてみる` and `この施設を消す`.
+- Enabled PLATEAU-Terrain visual terrain and set PLATEAU building `heightOffsetMeters` to `0`.
+- Updated UI styling to a brighter white-panel map-first presentation look.
+- Added `docs/DEMO_SCENARIO.md`.
+- Added `docs/POPULATION_MESH_FEASIBILITY.md`; population mesh is not adopted for this MVP.
+
+Runtime verification:
+
+- Dev server: `npm run dev -- --port 5174`
+- Local URL: `http://127.0.0.1:5174/plateau-cityhack-2026-hokudai-son/`
+- Chrome CDP port: `9224`
+- Verified flow:
+  `intro -> start -> tide +2.0 m -> supermarket problem prompt -> CTA -> place point A -> result -> replace -> place point B -> comparison -> conversation question`.
+- Verified `window.__PLATEAU_VIEWER__.terrainProvider.constructor.name` is `CesiumTerrainProvider`.
+- Verified PLATEAU-Terrain responses include `https://tile.plateauview.mlit.go.jp/terrain/layer.json` HTTP 200.
+- Verified two candidate placements had different evaluation values.
+- No major console errors or network failures in the final MVP flow.
+- Screenshot: `/tmp/plateau-final-mvp-flow-light.png`.
+
+Static verification:
+
+- `git diff --check`: PASS
+- `npm run typecheck`: PASS
+- `npm run build`: PASS
+- No `test` or `lint` npm script exists in `package.json`; not run.
+
+Known limitations:
+
+- Population mesh was not adopted; future adoption requires AOI-only preprocessing and source/field documentation.
+- PLATEAU-Terrain is an external trial service, so visual terrain availability depends on that endpoint.
+- The final comparison UI is optimized for desktop presentation; mobile layout should be polished if mobile demo is required.
+
+## Agent Instructions Update
+
+Status: PASS as of 2026-09-03.
+
+- `AGENTS.md` now includes `## Autonomous Development Policy`.
+- The new policy allows autonomous in-repository development and verification for approved PLATEAU CityHack tasks.
+- It still requires explicit user approval for pushes, PR operations, destructive git operations, external writes, system-wide installs, secrets access, machine-level configuration, and material scope expansion.
+
+## Current Local Dev Server
+
+Status: RUNNING as of 2026-09-03.
+
+- Command: `npm run dev -- --port 5174`
+- Local URL on the research Mac: `http://127.0.0.1:5174/plateau-cityhack-2026-hokudai-son/`
+- HTTP check: PASS with `HTTP/1.1 200 OK` on 2026-09-03.
+- Existing port `5173` was already occupied, so this session did not stop or modify that process.
+- Because Vite is bound to `127.0.0.1`, access from another machine over SSH requires local port forwarding, for example `ssh -L 5174:127.0.0.1:5174 <research-mac-host>`.
+- Real Chrome/CDP verification succeeded on 2026-09-03 for the map visibility fix.
+
+## Current Data Clarification
+
+- `交通` in the Urban Functions panel currently means the single facility-category record `transport-nishi-maizuru`: `西舞鶴駅・西駅交流センター`.
+- It is not a road-network reachability score or traffic-flow model. Road data remains separate visual/context data and selected-road inspection explicitly avoids automated closure/regulation claims.
 
 ## GitHub Pages Deployment Prep
 

@@ -15,12 +15,12 @@ export function InundationControl(props: Props) {
   return (
     <div className="panel water-panel">
       <div className="water-heading">
-        <span>海の水を上げてみよう</span>
+        <span>もし海の水がここまで来たら？</span>
         <strong>+{props.tideLevelMeters.toFixed(1)} m</strong>
       </div>
       <label className="elevation-toggle">
         <span>
-          <strong>水が来るか見る</strong>
+          <strong>水が来そうな場所を見る</strong>
           <small>ためしの水位です。予報ではありません。</small>
         </span>
         <input
@@ -31,7 +31,7 @@ export function InundationControl(props: Props) {
         />
       </label>
       <label className="tide-control">
-        <span>今の水位</span>
+        <span>試している水位</span>
         <input
           type="range"
           min={TIDE_LEVEL.minMeters}
@@ -78,7 +78,7 @@ export function InundationControl(props: Props) {
         ) : null}
         <p>
           地面の高さはGSI DEM5Aを使っています。水の深さは「水位 - 地面の高さ」で計算します。
-          これは公式の高潮予報ではなく、街を考えるためのシナリオです。
+          これは公式の高潮予報ではなく、未来の街を考えるためのシナリオです。
         </p>
       </details>
     </div>

@@ -11,6 +11,7 @@ import {
   VerticalOrigin
 } from "cesium";
 import { FACILITY_CATEGORIES } from "../data/facilities";
+import { facilityCategoryLabel } from "../data/facilityLabels";
 import type { Facility, FacilityCategory, FacilityCategoryVisibility } from "../types/facility";
 
 export type FacilityPickId = { kind: "facility"; facilityId: string };
@@ -26,6 +27,7 @@ export type FacilityLayer = {
 };
 
 const PIN_SIZE = 52;
+const DEPTH_TEST_ALWAYS_ON = 0;
 
 function buildNormalPin(symbol: string, colorHex: string): HTMLCanvasElement {
   return drawPinCanvas(symbol, colorHex, PIN_SIZE, false);
@@ -134,7 +136,7 @@ export function createFacilityLayer(viewer: Viewer, facilities: Facility[]): Fac
   const items = facilities.map((facility) => {
     const category = FACILITY_CATEGORIES.find((c) => c.id === facility.category)!;
     const pins = pinImages.get(facility.category)!;
-    const position = Cartesian3.fromDegrees(facility.longitude, facility.latitude, 1);
+    const position = Cartesian3.fromDegrees(facility.longitude, facility.latitude, 0);
     const hasColocated = colocatedCoordinateKeys.has(coordinateKey(facility));
     const labelOffset = hasColocated
       ? categoryPixelOffset(facility.category)
@@ -147,7 +149,7 @@ export function createFacilityLayer(viewer: Viewer, facilities: Facility[]): Fac
       verticalOrigin: VerticalOrigin.BOTTOM,
       heightReference: HeightReference.CLAMP_TO_GROUND,
       scaleByDistance: new NearFarScalar(150, 1.6, 5000, 0.65),
-      disableDepthTestDistance: Number.POSITIVE_INFINITY,
+      disableDepthTestDistance: DEPTH_TEST_ALWAYS_ON,
       color: Color.WHITE
     });
 
@@ -166,7 +168,7 @@ export function createFacilityLayer(viewer: Viewer, facilities: Facility[]): Fac
       backgroundColor: Color.fromCssColorString(category.color).withAlpha(0.93),
       backgroundPadding: new Cartesian2(9, 6),
       heightReference: HeightReference.CLAMP_TO_GROUND,
-      disableDepthTestDistance: Number.POSITIVE_INFINITY,
+      disableDepthTestDistance: DEPTH_TEST_ALWAYS_ON,
       scaleByDistance: new NearFarScalar(150, 1.2, 5000, 0.75),
       show: false
     });
@@ -252,12 +254,7 @@ export function categoryPixelOffset(category: Facility["category"]) {
 }
 
 function markerLabel(category: FacilityCategory) {
-  return ({
-    medical: "病院",
-    evacuation: "避難",
-    transport: "交通",
-    "daily-life": "くらし"
-  } satisfies Record<FacilityCategory, string>)[category];
+  return facilityCategoryLabel(category).markerName;
 }
 
 export function isFacilityPickId(value: unknown): value is FacilityPickId {

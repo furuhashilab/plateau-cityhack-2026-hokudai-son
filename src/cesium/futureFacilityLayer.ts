@@ -12,6 +12,7 @@ import {
   VerticalOrigin
 } from "cesium";
 import { FACILITY_CATEGORIES } from "../data/facilities";
+import { facilityCategoryLabel } from "../data/facilityLabels";
 import type { FutureFacilityScenario } from "../types/futureFacility";
 
 export type FutureFacilityPickId = { kind: "future-facility"; id: FutureFacilityScenario["id"] };
@@ -31,6 +32,7 @@ const BUILDING_DIMS: Record<string, [number, number, number]> = {
   transport: [24, 12, 12],
   "daily-life": [26, 20, 14]
 };
+const DEPTH_TEST_ALWAYS_ON = 0;
 
 export function createFutureFacilityLayer(viewer: Viewer): FutureFacilityLayer {
   const billboards = viewer.scene.primitives.add(new BillboardCollection({ scene: viewer.scene }));
@@ -91,16 +93,16 @@ export function createFutureFacilityLayer(viewer: Viewer): FutureFacilityLayer {
       });
 
       const pinCanvas = buildFuturePin(category.symbol, accentHex, category.color);
-      const pinPos = Cartesian3.fromDegrees(lon, lat, bh + 2);
+      const pinPos = Cartesian3.fromDegrees(lon, lat, 0);
 
       billboards.add({
         id: futureFacilityPickId(),
         position: pinPos,
         image: pinCanvas,
         verticalOrigin: VerticalOrigin.BOTTOM,
-        heightReference: HeightReference.RELATIVE_TO_GROUND,
+        heightReference: HeightReference.CLAMP_TO_GROUND,
         scaleByDistance: new NearFarScalar(200, 1.5, 5000, 0.72),
-        disableDepthTestDistance: Number.POSITIVE_INFINITY,
+        disableDepthTestDistance: DEPTH_TEST_ALWAYS_ON,
         color: Color.WHITE
       });
 
@@ -110,9 +112,9 @@ export function createFutureFacilityLayer(viewer: Viewer): FutureFacilityLayer {
         image: buildCategoryDot(category.color),
         verticalOrigin: VerticalOrigin.BOTTOM,
         pixelOffset: new Cartesian2(0, -38),
-        heightReference: HeightReference.RELATIVE_TO_GROUND,
+        heightReference: HeightReference.CLAMP_TO_GROUND,
         scaleByDistance: new NearFarScalar(200, 1.5, 5000, 0.72),
-        disableDepthTestDistance: Number.POSITIVE_INFINITY,
+        disableDepthTestDistance: DEPTH_TEST_ALWAYS_ON,
         color: Color.WHITE
       });
 
@@ -134,8 +136,8 @@ export function createFutureFacilityLayer(viewer: Viewer): FutureFacilityLayer {
         showBackground: true,
         backgroundColor: Color.fromCssColorString(affected ? "#9a3412" : "#0e7490").withAlpha(0.96),
         backgroundPadding: new Cartesian2(10, 6),
-        heightReference: HeightReference.RELATIVE_TO_GROUND,
-        disableDepthTestDistance: Number.POSITIVE_INFINITY,
+        heightReference: HeightReference.CLAMP_TO_GROUND,
+        disableDepthTestDistance: DEPTH_TEST_ALWAYS_ON,
         scaleByDistance: new NearFarScalar(200, 1.1, 5000, 0.8)
       });
 
@@ -160,12 +162,7 @@ function futureFacilityPickId(): FutureFacilityPickId {
 }
 
 function futureCategoryLabel(category: FutureFacilityScenario["category"]) {
-  return ({
-    medical: "病院",
-    evacuation: "避難できる場所",
-    transport: "交通",
-    "daily-life": "くらし"
-  } satisfies Record<FutureFacilityScenario["category"], string>)[category];
+  return facilityCategoryLabel(category).futureName;
 }
 
 function buildCategoryDot(colorHex: string): HTMLCanvasElement {

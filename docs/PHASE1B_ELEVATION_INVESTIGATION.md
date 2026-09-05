@@ -72,13 +72,20 @@ Official PLATEAU-Terrain height explanation and endpoint:
 
 - <https://docs.plateauview.mlit.go.jp/datasets/terrain/>
 
-### `heightOffsetMeters: -36` decision
+### Historical `heightOffsetMeters: -36` decision
 
-**Retain for Phase 1B, but only as the existing visual alignment workaround.**
+**This is retained for the presentation MVP as a visual alignment workaround.**
 
 The selected visualization does not replace Cesium's ellipsoid globe with an elevation terrain surface. Therefore removing `-36 m` would again leave ellipsoid-height PLATEAU buildings visibly above the zero-height ellipsoid surface. The offset is not applied to GSI DEM values, is not used by the future flood formula, and is not accepted as the measured Maizuru geoid height.
 
 If PLATEAU-Terrain is enabled later, both terrain and buildings are in ellipsoid height and the correct expected building offset is 0 m. That change must be visually and numerically tested at representative control points before removing the workaround.
+
+Presentation MVP terrain rollback, 2026-09-03:
+
+- PLATEAU-Terrain was removed from the default viewer after the live map check showed visible height mismatch.
+- The default viewer uses Cesium's ellipsoid globe again for stable presentation alignment.
+- The PLATEAU building tileset offset is `-36 m` for rendering only.
+- GSI DEM5A remains the numeric source for water-depth and candidate-location calculations.
 
 ## Runtime architecture
 

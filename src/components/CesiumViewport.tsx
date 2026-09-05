@@ -24,6 +24,9 @@ import {
 } from "../data/urbanFunctions";
 import type { FutureFacilityScenario } from "../types/futureFacility";
 import { createFutureFacilityLayer, type FutureFacilityLayer } from "../cesium/futureFacilityLayer";
+import { facilityCategoryLabel } from "../data/facilityLabels";
+import { evaluateFutureFacilityLocation } from "../data/locationEvaluation";
+import { computeCategoryPopulationImpact } from "../data/populationImpact";
 
 type Props = {
   dataset: PlateauTilesetDataset;
@@ -211,7 +214,7 @@ export function CesiumViewport({
       viewer.scene.requestRender();
     };
     viewer.camera.lookAt(
-      Cartesian3.fromDegrees(135.3337, 35.4498, 0),
+      Cartesian3.fromDegrees(135.3315, 35.4492, 0),
       MAIZURU_CAMERA.initialOffset
     );
     viewer.camera.lookAtTransform(Matrix4.IDENTITY);
@@ -415,6 +418,25 @@ export function CesiumViewport({
     longitude: number,
     latitude: number
   ): FutureFacilityScenario {
+    const impact = computeScenarioPointImpact(
+      longitude,
+      latitude,
+      elevationLayerRef.current?.data ?? null,
+      connectivityRef.current,
+      tideLevelRef.current,
+      inundationMethodRef.current
+    );
+    const populationImpact = computeCategoryPopulationImpact({
+      category,
+      facilities: WEST_MAIZURU_FACILITIES,
+      affectedFacilityIds: urbanFunctionImpactRef.current.affectedFacilityIds,
+      futureFacility: {
+        category,
+        longitude,
+        latitude,
+        impact
+      }
+    });
     return {
       id: "future-facility",
       kind: "scenario",
@@ -423,25 +445,20 @@ export function CesiumViewport({
       facilityType: `未来の${futureCategoryLabel(category)}案`,
       longitude,
       latitude,
-      impact: computeScenarioPointImpact(
+      impact,
+      evaluation: evaluateFutureFacilityLocation({
         longitude,
         latitude,
-        elevationLayerRef.current?.data ?? null,
-        connectivityRef.current,
-        tideLevelRef.current,
-        inundationMethodRef.current
-      )
+        impact,
+        facilities: WEST_MAIZURU_FACILITIES,
+        populationImpact
+      })
     };
   }
 }
 
 function futureCategoryLabel(category: FacilityCategory) {
-  return ({
-    medical: "病院",
-    evacuation: "避難できる場所",
-    transport: "交通",
-    "daily-life": "くらし"
-  } satisfies Record<FacilityCategory, string>)[category];
+  return facilityCategoryLabel(category).futureName;
 }
 
 function publishRoadStats(stats: RoadLayerStats) {

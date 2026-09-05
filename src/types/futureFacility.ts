@@ -1,3 +1,4 @@
+import type { LocationEvaluation } from "../data/locationEvaluation";
 import type { ScenarioPointImpact } from "../data/urbanFunctions";
 import type { FacilityCategory } from "./facility";
 
@@ -10,4 +11,5 @@ export type FutureFacilityScenario = {
   longitude: number;
   latitude: number;
   impact: ScenarioPointImpact;
+  evaluation: LocationEvaluation;
 };

@@ -1,0 +1,464 @@
+{
+  "metadata": {
+    "id": "estat-2020-census-500m-west-maizuru-aoi",
+    "source": "e-Stat / Statistics Bureau of Japan, 2020 Population Census regional mesh statistics",
+    "sourceUrl": "https://www.e-stat.go.jp/gis/statmap-search/data?statsId=T001141&code=5335&downloadType=2",
+    "termsUrl": "https://www.e-stat.go.jp/terms-of-use",
+    "statsId": "T001141",
+    "table": "人口及び世帯（JGD2011）",
+    "surveyYear": 2020,
+    "surveyDate": "2020-10",
+    "aggregateUnit": "4次メッシュ（500mメッシュ）",
+    "firstAreaMeshCode": "5335",
+    "populationField": "T001141001",
+    "extraction": "Filtered from first area mesh 5335 to the West Maizuru DEM AOI plus an approximately 0.012 degree buffer for 800m service-area calculations.",
+    "cellCount": 74,
+    "totalPopulation": 25742
+  },
+  "cells": [
+    {
+      "meshCode": "533512144",
+      "latitude": 35.43125,
+      "longitude": 135.309375,
+      "population": 238
+    },
+    {
+      "meshCode": "533512153",
+      "latitude": 35.43125,
+      "longitude": 135.315625,
+      "population": 68
+    },
+    {
+      "meshCode": "533512154",
+      "latitude": 35.43125,
+      "longitude": 135.321875,
+      "population": 554
+    },
+    {
+      "meshCode": "533512163",
+      "latitude": 35.43125,
+      "longitude": 135.328125,
+      "population": 683
+    },
+    {
+      "meshCode": "533512164",
+      "latitude": 35.43125,
+      "longitude": 135.334375,
+      "population": 1401
+    },
+    {
+      "meshCode": "533512173",
+      "latitude": 35.43125,
+      "longitude": 135.340625,
+      "population": 78
+    },
+    {
+      "meshCode": "533512174",
+      "latitude": 35.43125,
+      "longitude": 135.346875,
+      "population": 1
+    },
+    {
+      "meshCode": "533512252",
+      "latitude": 35.4354167,
+      "longitude": 135.321875,
+      "population": 309
+    },
+    {
+      "meshCode": "533512254",
+      "latitude": 35.4395833,
+      "longitude": 135.321875,
+      "population": 485
+    },
+    {
+      "meshCode": "533512261",
+      "latitude": 35.4354167,
+      "longitude": 135.328125,
+      "population": 1230
+    },
+    {
+      "meshCode": "533512262",
+      "latitude": 35.4354167,
+      "longitude": 135.334375,
+      "population": 1129
+    },
+    {
+      "meshCode": "533512263",
+      "latitude": 35.4395833,
+      "longitude": 135.328125,
+      "population": 1100
+    },
+    {
+      "meshCode": "533512264",
+      "latitude": 35.4395833,
+      "longitude": 135.334375,
+      "population": 631
+    },
+    {
+      "meshCode": "533512271",
+      "latitude": 35.4354167,
+      "longitude": 135.340625,
+      "population": 14
+    },
+    {
+      "meshCode": "533512273",
+      "latitude": 35.4395833,
+      "longitude": 135.340625,
+      "population": 3
+    },
+    {
+      "meshCode": "533512274",
+      "latitude": 35.4395833,
+      "longitude": 135.346875,
+      "population": 6
+    },
+    {
+      "meshCode": "533512344",
+      "latitude": 35.4479167,
+      "longitude": 135.309375,
+      "population": 421
+    },
+    {
+      "meshCode": "533512352",
+      "latitude": 35.44375,
+      "longitude": 135.321875,
+      "population": 259
+    },
+    {
+      "meshCode": "533512353",
+      "latitude": 35.4479167,
+      "longitude": 135.315625,
+      "population": 193
+    },
+    {
+      "meshCode": "533512354",
+      "latitude": 35.4479167,
+      "longitude": 135.321875,
+      "population": 474
+    },
+    {
+      "meshCode": "533512361",
+      "latitude": 35.44375,
+      "longitude": 135.328125,
+      "population": 1223
+    },
+    {
+      "meshCode": "533512362",
+      "latitude": 35.44375,
+      "longitude": 135.334375,
+      "population": 1074
+    },
+    {
+      "meshCode": "533512363",
+      "latitude": 35.4479167,
+      "longitude": 135.328125,
+      "population": 895
+    },
+    {
+      "meshCode": "533512364",
+      "latitude": 35.4479167,
+      "longitude": 135.334375,
+      "population": 701
+    },
+    {
+      "meshCode": "533512371",
+      "latitude": 35.44375,
+      "longitude": 135.340625,
+      "population": 561
+    },
+    {
+      "meshCode": "533512372",
+      "latitude": 35.44375,
+      "longitude": 135.346875,
+      "population": 603
+    },
+    {
+      "meshCode": "533512373",
+      "latitude": 35.4479167,
+      "longitude": 135.340625,
+      "population": 1059
+    },
+    {
+      "meshCode": "533512374",
+      "latitude": 35.4479167,
+      "longitude": 135.346875,
+      "population": 740
+    },
+    {
+      "meshCode": "533512381",
+      "latitude": 35.44375,
+      "longitude": 135.353125,
+      "population": 262
+    },
+    {
+      "meshCode": "533512383",
+      "latitude": 35.4479167,
+      "longitude": 135.353125,
+      "population": 386
+    },
+    {
+      "meshCode": "533512384",
+      "latitude": 35.4479167,
+      "longitude": 135.359375,
+      "population": 22
+    },
+    {
+      "meshCode": "533512442",
+      "latitude": 35.4520833,
+      "longitude": 135.309375,
+      "population": 20
+    },
+    {
+      "meshCode": "533512444",
+      "latitude": 35.45625,
+      "longitude": 135.309375,
+      "population": 152
+    },
+    {
+      "meshCode": "533512452",
+      "latitude": 35.4520833,
+      "longitude": 135.321875,
+      "population": 562
+    },
+    {
+      "meshCode": "533512454",
+      "latitude": 35.45625,
+      "longitude": 135.321875,
+      "population": 3
+    },
+    {
+      "meshCode": "533512461",
+      "latitude": 35.4520833,
+      "longitude": 135.328125,
+      "population": 1026
+    },
+    {
+      "meshCode": "533512462",
+      "latitude": 35.4520833,
+      "longitude": 135.334375,
+      "population": 378
+    },
+    {
+      "meshCode": "533512463",
+      "latitude": 35.45625,
+      "longitude": 135.328125,
+      "population": 566
+    },
+    {
+      "meshCode": "533512464",
+      "latitude": 35.45625,
+      "longitude": 135.334375,
+      "population": 4
+    },
+    {
+      "meshCode": "533512471",
+      "latitude": 35.4520833,
+      "longitude": 135.340625,
+      "population": 448
+    },
+    {
+      "meshCode": "533512472",
+      "latitude": 35.4520833,
+      "longitude": 135.346875,
+      "population": 226
+    },
+    {
+      "meshCode": "533512473",
+      "latitude": 35.45625,
+      "longitude": 135.340625,
+      "population": 157
+    },
+    {
+      "meshCode": "533512474",
+      "latitude": 35.45625,
+      "longitude": 135.346875,
+      "population": 100
+    },
+    {
+      "meshCode": "533512481",
+      "latitude": 35.4520833,
+      "longitude": 135.353125,
+      "population": 393
+    },
+    {
+      "meshCode": "533512482",
+      "latitude": 35.4520833,
+      "longitude": 135.359375,
+      "population": 1398
+    },
+    {
+      "meshCode": "533512483",
+      "latitude": 35.45625,
+      "longitude": 135.353125,
+      "population": 2
+    },
+    {
+      "meshCode": "533512484",
+      "latitude": 35.45625,
+      "longitude": 135.359375,
+      "population": 330
+    },
+    {
+      "meshCode": "533512542",
+      "latitude": 35.4604167,
+      "longitude": 135.309375,
+      "population": 173
+    },
+    {
+      "meshCode": "533512551",
+      "latitude": 35.4604167,
+      "longitude": 135.315625,
+      "population": 37
+    },
+    {
+      "meshCode": "533512553",
+      "latitude": 35.4645833,
+      "longitude": 135.315625,
+      "population": 21
+    },
+    {
+      "meshCode": "533512561",
+      "latitude": 35.4604167,
+      "longitude": 135.328125,
+      "population": 246
+    },
+    {
+      "meshCode": "533512563",
+      "latitude": 35.4645833,
+      "longitude": 135.328125,
+      "population": 67
+    },
+    {
+      "meshCode": "533512564",
+      "latitude": 35.4645833,
+      "longitude": 135.334375,
+      "population": 22
+    },
+    {
+      "meshCode": "533512581",
+      "latitude": 35.4604167,
+      "longitude": 135.353125,
+      "population": 127
+    },
+    {
+      "meshCode": "533512582",
+      "latitude": 35.4604167,
+      "longitude": 135.359375,
+      "population": 34
+    },
+    {
+      "meshCode": "533512584",
+      "latitude": 35.4645833,
+      "longitude": 135.359375,
+      "population": 47
+    },
+    {
+      "meshCode": "533512644",
+      "latitude": 35.4729167,
+      "longitude": 135.309375,
+      "population": 13
+    },
+    {
+      "meshCode": "533512651",
+      "latitude": 35.46875,
+      "longitude": 135.315625,
+      "population": 1
+    },
+    {
+      "meshCode": "533512653",
+      "latitude": 35.4729167,
+      "longitude": 135.315625,
+      "population": 7
+    },
+    {
+      "meshCode": "533512654",
+      "latitude": 35.4729167,
+      "longitude": 135.321875,
+      "population": 5
+    },
+    {
+      "meshCode": "533512661",
+      "latitude": 35.46875,
+      "longitude": 135.328125,
+      "population": 10
+    },
+    {
+      "meshCode": "533512662",
+      "latitude": 35.46875,
+      "longitude": 135.334375,
+      "population": 11
+    },
+    {
+      "meshCode": "533512673",
+      "latitude": 35.4729167,
+      "longitude": 135.340625,
+      "population": 135
+    },
+    {
+      "meshCode": "533512674",
+      "latitude": 35.4729167,
+      "longitude": 135.346875,
+      "population": 85
+    },
+    {
+      "meshCode": "533512682",
+      "latitude": 35.46875,
+      "longitude": 135.359375,
+      "population": 61
+    },
+    {
+      "meshCode": "533512683",
+      "latitude": 35.4729167,
+      "longitude": 135.353125,
+      "population": 49
+    },
+    {
+      "meshCode": "533512684",
+      "latitude": 35.4729167,
+      "longitude": 135.359375,
+      "population": 62
+    },
+    {
+      "meshCode": "533512753",
+      "latitude": 35.48125,
+      "longitude": 135.315625,
+      "population": 91
+    },
+    {
+      "meshCode": "533512772",
+      "latitude": 35.4770833,
+      "longitude": 135.346875,
+      "population": 241
+    },
+    {
+      "meshCode": "533512774",
+      "latitude": 35.48125,
+      "longitude": 135.346875,
+      "population": 56
+    },
+    {
+      "meshCode": "533512781",
+      "latitude": 35.4770833,
+      "longitude": 135.353125,
+      "population": 828
+    },
+    {
+      "meshCode": "533512782",
+      "latitude": 35.4770833,
+      "longitude": 135.359375,
+      "population": 367
+    },
+    {
+      "meshCode": "533512783",
+      "latitude": 35.48125,
+      "longitude": 135.353125,
+      "population": 204
+    },
+    {
+      "meshCode": "533512784",
+      "latitude": 35.48125,
+      "longitude": 135.359375,
+      "population": 174
+    }
+  ]
+}

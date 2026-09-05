@@ -1,10 +1,14 @@
+import { facilityCategoryLabel } from "../data/facilityLabels";
+import { FutureFacilityResultCard } from "./FutureFacilityResultCard";
 import type { FutureFacilityScenario } from "../types/futureFacility";
 
 export function SelectedFutureFacilityPanel({
   facility,
+  onReplace,
   onRemove
 }: {
   facility: FutureFacilityScenario;
+  onReplace: () => void;
   onRemove: () => void;
 }) {
   const affected = (facility.impact.depthMeters ?? 0) > 0;
@@ -13,10 +17,11 @@ export function SelectedFutureFacilityPanel({
   return (
     <div className="panel selected-panel future-facility-panel">
       <div className="eyebrow">未来の施設</div>
-      <h2>未来の{categoryLabel(facility.category)}</h2>
+      <h2>未来の{facilityCategoryLabel(facility.category).futureName}</h2>
       <p className={`future-result ${statusClass}`}>
         {affected ? "この場所は水の影響を受けるかも" : facility.impact.depthMeters === null ? "この場所はまだ調べられません" : "この場所は水の影響を受けなさそう"}
       </p>
+      <FutureFacilityResultCard facility={facility} />
       <dl>
         <div><dt>地面の高さ</dt><dd>{formatMeters(facility.impact.groundElevationMeters)}</dd></div>
         <div><dt>海の水位</dt><dd>{formatMeters(facility.impact.tideLevelMeters, true)}</dd></div>
@@ -35,13 +40,12 @@ export function SelectedFutureFacilityPanel({
           <div><dt>データ</dt><dd>未来に置いた施設</dd></div>
         </dl>
       </details>
-      <button type="button" className="remove-future-button" onClick={onRemove}>消す</button>
+      <div className="future-panel-actions">
+        <button type="button" className="replace-future-button" onClick={onReplace}>別の場所に置いてみる</button>
+        <button type="button" className="remove-future-button" onClick={onRemove}>この候補を消す</button>
+      </div>
     </div>
   );
-}
-
-function categoryLabel(category: string) {
-  return ({ medical: "病院", evacuation: "避難できる場所", transport: "交通", "daily-life": "くらし" } as Record<string, string>)[category] ?? category;
 }
 
 function formatMeters(value: number | null, includeSign = false) {

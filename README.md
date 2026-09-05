@@ -153,10 +153,19 @@ The prototype currently uses data including:
 - **Project PLATEAU** — Maizuru City 3D city models
 - **Geospatial Information Authority of Japan (GSI)** — DEM5A elevation data
 - Publicly available facility datasets and manually verified open data
+- **PLATEAU-Terrain** — visual terrain alignment for Cesium
 
 Detailed facility data provenance and limitations are documented in:
 
 `docs/FACILITY_DATA_MANIFEST.md`
+
+The presentation demo scenario and data classification notes are documented in:
+
+`docs/DEMO_SCENARIO.md`
+
+Population mesh feasibility is documented in:
+
+`docs/POPULATION_MESH_FEASIBILITY.md`
 
 ---
 
